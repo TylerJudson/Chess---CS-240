@@ -68,4 +68,9 @@ public class ChessMove {
         return Objects.hash(this.startPosition, this.endPosition, this.promotionPiece);
     }
 
+    @Override
+    public String toString() {
+        return "Start: [%d, %d]; End: [%d, %d]; PP: %s".formatted(this.startPosition.getRow(), this.startPosition.getColumn(), this.endPosition.getRow(), this.endPosition.getColumn(), this.promotionPiece);
+    }
+
 }
