@@ -76,6 +76,10 @@ public class ChessPiece {
                 return knightMoves(board, position);
             case PieceType.BISHOP:
                 return bishopMoves(board, position);
+            case PieceType.QUEEN:
+                return queenMoves(board, position);
+            case PieceType.KING:
+                return kingMoves(board, position);
         
             default:
                 return pawnMoves(board, position);
@@ -320,6 +324,55 @@ public class ChessPiece {
         return possibleMoves;
     }
 
+    
+    /**
+     * Calculates all the positions a QUEEN can move to
+     * 
+     * @return Collection of valid moves
+     */
+    public Collection<ChessMove> queenMoves(ChessBoard board, ChessPosition position) {
+        Collection<ChessMove> possibleMoves = new ArrayList<ChessMove>();
+
+        possibleMoves.addAll(rookMoves(board, position));
+        possibleMoves.addAll(bishopMoves(board, position));
+
+        return possibleMoves;
+    }
+
+    /**
+     * Calculates all the positions a KING can move to
+     * 
+     * @return Collection of valid moves
+     */
+    public Collection<ChessMove> kingMoves(ChessBoard board, ChessPosition position) {
+        Collection<ChessMove> possibleMoves = new ArrayList<ChessMove>();
+
+        ChessPosition[] endPositions = {
+            new ChessPosition(position.getRow() + 1, position.getColumn()),
+            new ChessPosition(position.getRow() + 1, position.getColumn() + 1),
+            new ChessPosition(position.getRow(), position.getColumn() + 1),
+            new ChessPosition(position.getRow() - 1, position.getColumn() + 1),
+            new ChessPosition(position.getRow() - 1, position.getColumn()),
+            new ChessPosition(position.getRow() - 1, position.getColumn() - 1),
+            new ChessPosition(position.getRow(), position.getColumn() - 1),
+            new ChessPosition(position.getRow() + 1, position.getColumn() - 1),
+        };
+
+        for (ChessPosition chessPosition : endPositions) {
+            if (1 <= chessPosition.getRow() && chessPosition.getRow() <= 8
+            && 1 <= chessPosition.getColumn() && chessPosition.getColumn() <= 8
+            ) {
+                ChessPiece boardPiece = board.getPiece(chessPosition);
+                if (boardPiece == null || boardPiece.pieceColor != this.getTeamColor()) {
+                    possibleMoves.add(new ChessMove(position, chessPosition, null));
+                }
+            }
+            
+        }
+
+        return possibleMoves;
+    }
+    
 
 
 
