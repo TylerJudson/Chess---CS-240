@@ -46,6 +46,18 @@ public class ChessBoard {
     }
 
     /**
+     * Moves a given piece
+     * The piece will replace any piece including its own color
+     * 
+     * @param move The chess move to perform
+     */
+    public void movePiece(ChessMove move) {
+        ChessPiece pieceToMove = this.getPiece(move.getStartPosition());
+        this.addPiece(move.getEndPosition(), pieceToMove);
+        this.addPiece(move.getStartPosition(), null);
+    }
+
+    /**
      * Sets the board to the default starting board
      * (How the game of chess normally starts)
      */
@@ -82,6 +94,24 @@ public class ChessBoard {
         addPiece(new ChessPosition(1, 5), new ChessPiece(TeamColor.WHITE, PieceType.KING));
         addPiece(new ChessPosition(8, 5), new ChessPiece(TeamColor.BLACK, PieceType.KING));
     }
+
+
+    /**
+     * Performs a deep copy on a given chessboard
+     * 
+     * @param original the original chessboard to copy
+     * @return the copy of the chessboard
+     */
+    static public ChessBoard deepCopy(ChessBoard original) {
+        ChessBoard copy = new ChessBoard();
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
+                copy.addPiece(new ChessPosition(i, j), original.getPiece(new ChessPosition(i, j)));
+            }
+        }
+        return copy;
+    }
+
 
     @Override
     public boolean equals(Object o) {

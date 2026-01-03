@@ -1,6 +1,9 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
+
+import chess.ChessPiece.PieceType;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -10,15 +13,20 @@ import java.util.Collection;
  */
 public class ChessGame {
 
-    public ChessGame() {
+    ChessBoard board;
+    TeamColor currentTeam;
 
+    public ChessGame() {
+        this.board = new ChessBoard();
+        this.board.resetBoard();
+        this.currentTeam = TeamColor.WHITE;
     }
 
     /**
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        throw new RuntimeException("Not implemented");
+        return this.currentTeam;
     }
 
     /**
@@ -27,7 +35,7 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        throw new RuntimeException("Not implemented");
+        this.currentTeam = team;
     }
 
     /**
@@ -46,7 +54,21 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece requestedPiece = this.board.getPiece(startPosition);
+        if (requestedPiece == null) {
+            return null;
+        }
+
+        Collection<ChessMove> possibleMoves = new ArrayList<ChessMove>();
+        for (ChessMove possibleMove : requestedPiece.pieceMoves(this.board, startPosition)) {
+            ChessBoard copiedBoard = ChessBoard.deepCopy(this.getBoard());
+            copiedBoard.movePiece(possibleMove);
+            if (!this.isInCheckGivenBoard(copiedBoard, requestedPiece.getTeamColor())) {
+                possibleMoves.add(possibleMove);
+            }
+        }
+
+        return possibleMoves;
     }
 
     /**
@@ -62,11 +84,37 @@ public class ChessGame {
     /**
      * Determines if the given team is in check
      *
-     * @param teamColor which team to check for check
+     * @param teamColor which team to check for 
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return isInCheckGivenBoard(this.getBoard(), teamColor);
+    }
+
+    /**
+     * Determins if the given team is in check on a particular board
+     * 
+     * @param board the board to check on 
+     * @param teamColor which team to check for
+     * @return True if the specified team is in check on the given board
+     */
+    public boolean isInCheckGivenBoard(ChessBoard board, TeamColor teamColor) {
+         // Find the position of the king
+        ChessPosition kingPosition = this.findKing(board, teamColor);
+
+        // Loop through all of the oppenents pieces
+        for (ChessPosition opponentPosition : this.findAllPositionsOfPieces(board, teamColor == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE)) {
+            ChessPiece opponentPiece = board.getPiece(opponentPosition);
+            
+            // Loop through all of the moves to determine if they match the king's position
+            for (ChessMove move : opponentPiece.pieceMoves(board, opponentPosition)) {
+                if (move.getEndPosition().equals(kingPosition)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -96,7 +144,7 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        throw new RuntimeException("Not implemented");
+        this.board = board;
     }
 
     /**
@@ -105,6 +153,72 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return this.board;
     }
+
+    /**
+     * Finds the position of the king for the given team color
+     * 
+     * @param board the chessboard to check on
+     * @param teamColor the team color to find the king for
+     * @return the king or null if it doesn't exist
+     */
+    public ChessPosition findKing(ChessBoard board, TeamColor teamColor) {
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
+                ChessPiece piece = board.getPiece(new ChessPosition(i, j));
+                if (piece != null && piece.getTeamColor() == teamColor && piece.getPieceType() == PieceType.KING) {
+                    return new ChessPosition(i, j);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Finds all of the pieces on the board for a given color
+     * 
+     * @param board the chessboard to check
+     * @param teamColor the particular color
+     * @return a list of all of the pieces
+     */
+    public Collection<ChessPiece> findAllPieces(ChessBoard board, TeamColor teamColor) {
+        Collection<ChessPiece> pieces = new ArrayList<ChessPiece>();
+
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
+                ChessPiece piece = board.getPiece(new ChessPosition(i, j));
+                if (piece != null && piece.getTeamColor() == teamColor) {
+                    pieces.add(piece);
+                }
+            }
+        }
+
+        return pieces;
+    }
+
+    /**
+     * Finds all of the positions of a given TeamColor's pieces
+     * 
+     * @param board the chessboard to check
+     * @param teamColor the given TeamColor
+     * @return the list of positions
+     */
+    public Collection<ChessPosition> findAllPositionsOfPieces(ChessBoard board, TeamColor teamColor) {
+        Collection<ChessPosition> positions = new ArrayList<ChessPosition>();
+
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
+                ChessPiece piece = board.getPiece(new ChessPosition(i, j));
+                if (piece != null && piece.getTeamColor() == teamColor) {
+                    positions.add(new ChessPosition(i, j));
+                }
+            }
+        }
+
+        return positions;
+    }
+
+
+
 }
