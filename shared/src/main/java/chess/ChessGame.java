@@ -2,6 +2,7 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
 import chess.ChessPiece.PieceType;
 
@@ -160,7 +161,19 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+         if (!this.isInCheck(teamColor)) {
+            
+            // Loop through all of the team's pieces on the board   
+            for (ChessPosition piecePosition : this.findAllPositionsOfPieces(this.getBoard(), teamColor)) {
+                
+                // If any piece has a valid move then the king is not in checkmate
+                if (!this.validMoves(piecePosition).isEmpty()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -258,6 +271,27 @@ public class ChessGame {
             return true;
         }
         return false;
+    }
+
+
+
+
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof ChessGame) {
+            ChessGame other = (ChessGame) o;
+            if (this.getBoard().equals(other.getBoard()) && this.getTeamTurn().equals(other.getTeamTurn())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.getBoard(), this.getTeamTurn());
     }
 
 }
