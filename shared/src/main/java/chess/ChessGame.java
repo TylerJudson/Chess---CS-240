@@ -23,6 +23,8 @@ public class ChessGame {
     private boolean blackKingSideCastlingHasMoved;
     private boolean blackQueenSideCastlingHasMoved;
 
+    private ChessMove previousMove;
+
     public ChessGame() {
         this.board = new ChessBoard();
         this.board.resetBoard();
@@ -32,6 +34,8 @@ public class ChessGame {
         this.whiteQueenSideCastlingHasMoved = false;
         this.blackKingSideCastlingHasMoved = false;
         this.blackQueenSideCastlingHasMoved = false;
+
+        this.previousMove = null;
     }
 
     /**
@@ -89,6 +93,11 @@ public class ChessGame {
             if (!isInCheckAftermove(possibleMove)) {
                 possibleMoves.add(possibleMove);
             }
+         }
+
+        ChessMove possibleEnPassantMove = getEnPassantMove(startPosition);
+        if (possibleEnPassantMove != null) {
+            possibleMoves.add(possibleEnPassantMove);
         }
 
         return possibleMoves;
@@ -116,10 +125,15 @@ public class ChessGame {
                 this.getBoard().movePiece(new ChessMove(new ChessPosition(move.getStartPosition().getRow(), 1), new ChessPosition(move.getStartPosition().getRow(), 4), null));
             }
         }
+        else if (this.isEnPassantMove(move)) {
+            this.getBoard().movePiece(move);
+            this.getBoard().addPiece(this.previousMove.getEndPosition(), null);
+        }
         else {
             this.getBoard().movePiece(move);
         }
 
+        this.previousMove = move;
         this.changeTeamTurn();
     }
 
@@ -396,7 +410,59 @@ public class ChessGame {
         return false;
     }
 
+    /**
+     * Determines if the piece at the given position can do an en passant move
+     * @param pos
+     * @return
+     */
+    private boolean canDoEnPassant(ChessPosition pos) {
+        // Check if the piece is a pawn and is on the correct row
+        ChessPiece pawn = this.getBoard().getPiece(pos);
+        if (pawn == null) return false;
 
+        int row = pawn.getTeamColor() == TeamColor.WHITE ? 5 : 4;
+        if (pawn.getPieceType() == PieceType.PAWN && pos.getRow() == row) {
+            // Check if the last move was performed by a pawn and that they moved 2 spaces
+            ChessPiece opponentPawn = this.getBoard().getPiece(this.previousMove.getEndPosition());
+            if (opponentPawn.getPieceType() == PieceType.PAWN && Math.abs(this.previousMove.getStartPosition().getRow() - this.previousMove.getEndPosition().getRow()) == 2) {
+
+                // Check if the pawns are right next to eachother
+                if (Math.abs(pos.getColumn() - this.previousMove.getEndPosition().getColumn()) == 1) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Gets the move for a valid enpassant move returns null if there is not a valid move
+     * @param move 
+     * @return
+     */
+    private ChessMove getEnPassantMove(ChessPosition pos) {
+
+        if (canDoEnPassant(pos)) {
+            ChessPiece pawn = this.getBoard().getPiece(pos);
+            int newRow = pawn.getTeamColor() == TeamColor.WHITE ? 6 : 3;
+            return new ChessMove(pos, new ChessPosition(newRow, this.previousMove.getEndPosition().getColumn()), null);
+        }
+     
+        return null;
+    }
+
+    /**
+     * Determines if a move is an en passant move or not
+     * @param move the move to check
+     * @return
+     */
+    private boolean isEnPassantMove(ChessMove move) {
+        if (Objects.equals(getEnPassantMove(move.getStartPosition()), (move))) {
+            return true;
+        }
+        return false;
+
+    }
 
 
     @Override
