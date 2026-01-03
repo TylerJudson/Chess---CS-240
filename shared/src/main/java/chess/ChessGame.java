@@ -227,5 +227,19 @@ public class ChessGame {
     }
 
 
+    /**
+     * Determines if a move is valid
+     * 
+     * @param move the move to check
+     * @param teamColor the color of the current team
+     * @return whether it is valid or not
+     */
+    public boolean isValidMove(ChessMove move, TeamColor teamcolor) {
+        ChessPiece piece = this.getBoard().getPiece(move.getStartPosition());
+        if (piece != null && piece.getTeamColor() == teamcolor && this.validMoves(move.getStartPosition()).contains(move)) {
+            return true;
+        }
+        return false;
+    }
 
 }
