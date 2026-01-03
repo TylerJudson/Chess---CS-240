@@ -72,6 +72,10 @@ public class ChessPiece {
                 return pawnMoves(board, position);
             case PieceType.ROOK: 
                 return rookMoves(board, position);
+            case PieceType.KNIGHT:
+                return knightMoves(board, position);
+            case PieceType.BISHOP:
+                return bishopMoves(board, position);
         
             default:
                 return pawnMoves(board, position);
@@ -192,6 +196,130 @@ public class ChessPiece {
 
         return possibleMoves;
     }
+
+    /**
+     * Calculates all the positions a KNIGHT can move to
+     * 
+     * @return Collection of valid moves
+     */
+    public Collection<ChessMove> knightMoves(ChessBoard board, ChessPosition position) {
+        Collection<ChessMove> possibleMoves = new ArrayList<ChessMove>();
+
+        ChessPosition[] endPositions = {
+            // UP - Right and Left
+            new ChessPosition(position.getRow() + 2, position.getColumn() + 1),
+            new ChessPosition(position.getRow() + 2, position.getColumn() - 1),
+            // RIGHT - Up and Down
+            new ChessPosition(position.getRow() + 1, position.getColumn() + 2),
+            new ChessPosition(position.getRow() - 1, position.getColumn() + 2),
+            // DOWN - Right and Left
+            new ChessPosition(position.getRow() - 2, position.getColumn() + 1),
+            new ChessPosition(position.getRow() - 2, position.getColumn() - 1),
+            // LEFT - Up and Down
+            new ChessPosition(position.getRow() + 1, position.getColumn() - 2),
+            new ChessPosition(position.getRow() - 1, position.getColumn() - 2),
+        };
+
+        for (ChessPosition chessPosition : endPositions) {
+            if (1 <= chessPosition.getRow() && chessPosition.getRow() <= 8
+            && 1 <= chessPosition.getColumn() && chessPosition.getColumn() <= 8
+            ) {
+                ChessPiece boardPiece = board.getPiece(chessPosition);
+                if (boardPiece == null || boardPiece.pieceColor != this.getTeamColor()) {
+                    possibleMoves.add(new ChessMove(position, chessPosition, null));
+                }
+            }
+            
+        }
+
+        return possibleMoves;
+    }
+
+    /**
+     * Calculates all the positions a BISHOP can move to
+     * 
+     * @return Collection of valid moves
+     */
+    public Collection<ChessMove> bishopMoves(ChessBoard board, ChessPosition position) {
+        Collection<ChessMove> possibleMoves = new ArrayList<ChessMove>();
+
+        // Up and Right
+        int row = position.getRow() + 1;
+        int col = position.getColumn() + 1;
+        while(row <= 8 && col <= 8) {
+            ChessPosition newPos = new ChessPosition(row, col);
+            if (board.getPiece(newPos) != null) {
+                if (board.getPiece(newPos).pieceColor != this.pieceColor) {
+                    possibleMoves.add(new ChessMove(position, newPos, null));
+                }
+                break;
+            }
+            else {
+                possibleMoves.add(new ChessMove(position, newPos, null));
+            }
+            row++;
+            col++;
+        }
+
+        // Down and Right
+        row = position.getRow() - 1;
+        col = position.getColumn() + 1;
+        while(row >= 1 && col <= 8) {
+            ChessPosition newPos = new ChessPosition(row, col);
+            if (board.getPiece(newPos) != null) {
+                if (board.getPiece(newPos).pieceColor != this.pieceColor) {
+                    possibleMoves.add(new ChessMove(position, newPos, null));
+                }
+                break;
+            }
+            else {
+                possibleMoves.add(new ChessMove(position, newPos, null));
+            }
+            row--;
+            col++;
+        }
+
+        // Down and Left
+        row = position.getRow() - 1;
+        col = position.getColumn() - 1;
+        while(row >= 1 && col >= 1) {
+            ChessPosition newPos = new ChessPosition(row, col);
+            if (board.getPiece(newPos) != null) {
+                if (board.getPiece(newPos).pieceColor != this.pieceColor) {
+                    possibleMoves.add(new ChessMove(position, newPos, null));
+                }
+                break;
+            }
+            else {
+                possibleMoves.add(new ChessMove(position, newPos, null));
+            }
+            row--;
+            col--;
+        }
+
+        // Up and Left
+        row = position.getRow() + 1;
+        col = position.getColumn() - 1;
+        while(row <= 8 && col >= 1) {
+            ChessPosition newPos = new ChessPosition(row, col);
+            if (board.getPiece(newPos) != null) {
+                if (board.getPiece(newPos).pieceColor != this.pieceColor) {
+                    possibleMoves.add(new ChessMove(position, newPos, null));
+                }
+                break;
+            }
+            else {
+                possibleMoves.add(new ChessMove(position, newPos, null));
+            }
+            row++;
+            col--;
+        }
+
+        
+
+        return possibleMoves;
+    }
+
 
 
 
