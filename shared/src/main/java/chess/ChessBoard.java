@@ -53,8 +53,13 @@ public class ChessBoard {
      */
     public void movePiece(ChessMove move) {
         ChessPiece pieceToMove = this.getPiece(move.getStartPosition());
+        
         this.addPiece(move.getEndPosition(), pieceToMove);
         this.addPiece(move.getStartPosition(), null);
+
+        if (move.getPromotionPiece() != null) {
+            pieceToMove.promotePawn(move.getPromotionPiece());
+        }
     }
 
     /**

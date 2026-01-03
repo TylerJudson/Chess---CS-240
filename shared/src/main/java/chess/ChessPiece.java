@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -56,6 +57,12 @@ public class ChessPiece {
      */
     public PieceType getPieceType() {
         return type;
+    }
+    
+    public void promotePawn(PieceType promotion) {
+        if (Arrays.asList(Promotions).contains(promotion)) {
+            this.type = promotion;
+        }
     }
 
     /**
