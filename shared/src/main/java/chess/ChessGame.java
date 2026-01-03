@@ -37,6 +37,13 @@ public class ChessGame {
     public void setTeamTurn(TeamColor team) {
         this.currentTeam = team;
     }
+    
+    /**
+     * Changes the team turn from black to white or from white to black
+     */
+    public void changeTeamTurn() {
+        this.setTeamTurn(this.getTeamTurn() == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE);
+    }
 
     /**
      * Enum identifying the 2 possible teams in a chess game
