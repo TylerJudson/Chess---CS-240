@@ -14,13 +14,24 @@ import chess.ChessPiece.PieceType;
  */
 public class ChessGame {
 
-    ChessBoard board;
-    TeamColor currentTeam;
+    private ChessBoard board;
+    private TeamColor currentTeam;
+
+    // These variables determine whether the p
+    private boolean whiteKingSideCastlingHasMoved;
+    private boolean whiteQueenSideCastlingHasMoved;
+    private boolean blackKingSideCastlingHasMoved;
+    private boolean blackQueenSideCastlingHasMoved;
 
     public ChessGame() {
         this.board = new ChessBoard();
         this.board.resetBoard();
         this.currentTeam = TeamColor.WHITE;
+
+        this.whiteKingSideCastlingHasMoved = false;
+        this.whiteQueenSideCastlingHasMoved = false;
+        this.blackKingSideCastlingHasMoved = false;
+        this.blackQueenSideCastlingHasMoved = false;
     }
 
     /**
@@ -69,9 +80,13 @@ public class ChessGame {
 
         Collection<ChessMove> possibleMoves = new ArrayList<ChessMove>();
         for (ChessMove possibleMove : requestedPiece.pieceMoves(this.board, startPosition)) {
-            ChessBoard copiedBoard = ChessBoard.deepCopy(this.getBoard());
-            copiedBoard.movePiece(possibleMove);
-            if (!this.isInCheckGivenBoard(copiedBoard, requestedPiece.getTeamColor())) {
+
+            // If the move is castling and we can't castle don't add the move
+            if (this.isMoveCastling(possibleMove) && !this.canCastle(possibleMove)) {
+                continue;
+            }
+
+            if (!isInCheckAftermove(possibleMove)) {
                 possibleMoves.add(possibleMove);
             }
         }
@@ -90,7 +105,20 @@ public class ChessGame {
             throw new InvalidMoveException();
         }
 
-        this.getBoard().movePiece(move);
+        this.updateCastlingHasMoved(move);
+
+        if (this.isMoveCastling(move)) {
+            this.getBoard().movePiece(move);
+            if (move.getEndPosition().getColumn() == 7) {
+                this.getBoard().movePiece(new ChessMove(new ChessPosition(move.getStartPosition().getRow(), 8), new ChessPosition(move.getStartPosition().getRow(), 6), null));
+            }
+            else {
+                this.getBoard().movePiece(new ChessMove(new ChessPosition(move.getStartPosition().getRow(), 1), new ChessPosition(move.getStartPosition().getRow(), 4), null));
+            }
+        }
+        else {
+            this.getBoard().movePiece(move);
+        }
 
         this.changeTeamTurn();
     }
@@ -129,6 +157,21 @@ public class ChessGame {
         }
 
         return false;
+    }
+
+    /**
+     * Determine if a move will cause the team to be in check
+     * @param move the move to check
+     * @return whether they will be in check or not
+     */
+    public boolean isInCheckAftermove(ChessMove move) {
+        TeamColor pieceColor= this.getBoard().getPiece(move.getStartPosition()).getTeamColor();
+        ChessBoard copiedBoard = ChessBoard.deepCopy(this.getBoard());
+        copiedBoard.movePiece(move);
+        if (!this.isInCheckGivenBoard(copiedBoard, pieceColor)) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -273,7 +316,85 @@ public class ChessGame {
         return false;
     }
 
+    /**
+     * Updates whether the pieces have moved that determine if the king can castle
+     * 
+     * @param move
+     */
+    private void updateCastlingHasMoved(ChessMove move) {
+        ChessPiece piece = this.getBoard().getPiece(move.getStartPosition());
+        if (piece.getPieceType() == PieceType.KING) {
+            if (this.getTeamTurn() == TeamColor.WHITE) {
+                this.whiteKingSideCastlingHasMoved = true;
+                this.whiteQueenSideCastlingHasMoved = true;
+            }
+            else {
+                this.blackKingSideCastlingHasMoved = true;
+                this.blackQueenSideCastlingHasMoved = true;
+            }
+        }
+        else if (piece.getPieceType() == PieceType.ROOK) {
+            if (move.getStartPosition().equals(new ChessPosition(1, 8)) && this.getTeamTurn() == TeamColor.WHITE) {
+                this.whiteKingSideCastlingHasMoved = true;
+            }
+            else if (move.getStartPosition().equals(new ChessPosition(1, 1)) && this.getTeamTurn() == TeamColor.WHITE) {
+                this.whiteQueenSideCastlingHasMoved = true;
+            }
+            else if (move.getStartPosition().equals(new ChessPosition(8, 8)) && this.getTeamTurn() == TeamColor.BLACK) {
+                this.blackKingSideCastlingHasMoved = true;
+            }
+            else if (move.getStartPosition().equals(new ChessPosition(8, 1)) && this.getTeamTurn() == TeamColor.BLACK) {
+                this.blackQueenSideCastlingHasMoved = true;
+            }
+        }
+    }
 
+
+    /**
+     * Checks if a move is considered castling
+     * 
+     * @param move
+     * @return
+     */
+    private boolean isMoveCastling(ChessMove move) {
+        int row = board.getPiece(move.getStartPosition()).getTeamColor() == TeamColor.WHITE ? 1 : 8;
+        if (this.getBoard().getPiece(move.getStartPosition()).getPieceType() == PieceType.KING
+            && move.getStartPosition().equals(new ChessPosition(row, 5))
+            && Math.abs(move.getEndPosition().getColumn() - move.getStartPosition().getColumn()) == 2) {
+                return true;
+            }
+        return false;
+    }
+
+    /**
+     * Determins if we can castle based if a move is considered castling
+     * and if the side's pieces have not moved. 
+     * 
+     * @param move
+     * @return
+     */
+    private boolean canCastle(ChessMove move) {
+        TeamColor pieceTeamColor = this.getBoard().getPiece(move.getStartPosition()).getTeamColor();
+        if (isMoveCastling(move) && !isInCheck(pieceTeamColor)) {
+            if (move.getEndPosition().getColumn() == 7
+                && !isInCheckAftermove(new ChessMove(move.getStartPosition(), new ChessPosition(move.getStartPosition().getRow(), 6), null))
+            ) {
+                if (pieceTeamColor == TeamColor.WHITE) {
+                    return !this.whiteKingSideCastlingHasMoved;
+                }
+                return !this.blackKingSideCastlingHasMoved;
+            }
+            else if (move.getEndPosition().getColumn() == 3
+                && !isInCheckAftermove(new ChessMove(move.getStartPosition(), new ChessPosition(move.getStartPosition().getRow(), 4), null))
+            ) {
+                if (pieceTeamColor == TeamColor.WHITE) {
+                    return !this.whiteQueenSideCastlingHasMoved;
+                }
+                return !this.blackQueenSideCastlingHasMoved;
+            }
+        }
+        return false;
+    }
 
 
 

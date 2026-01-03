@@ -377,6 +377,28 @@ public class ChessPiece {
             
         }
 
+        // Check castling conditions
+        int row = board.getPiece(position).pieceColor == TeamColor.WHITE ? 1 : 8;
+        // King must be in position to castle
+        if (position.equals(new ChessPosition(row, 5))) {
+            // Rook must be in position to king-side castle
+            ChessPiece kingSideRook = board.getPiece(new ChessPosition(row, 8));
+            if (kingSideRook != null && kingSideRook.getPieceType() == PieceType.ROOK) {
+                // There cannot be any pieces in between
+                if (board.getPiece(new ChessPosition(row, 6)) == null && board.getPiece(new ChessPosition(row, 7)) == null) {
+                    possibleMoves.add(new ChessMove(position, new ChessPosition(row, 7), null));
+                }
+            }
+            // Rook must be in position to queen-side castle
+            ChessPiece queenSideRook = board.getPiece(new ChessPosition(row, 1));
+            if (queenSideRook != null && queenSideRook.getPieceType() == PieceType.ROOK) {
+                // There cannot be any pieces in between
+                if (board.getPiece(new ChessPosition(row, 2)) == null && board.getPiece(new ChessPosition(row, 3)) == null && board.getPiece(new ChessPosition(row, 4)) == null) {
+                    possibleMoves.add(new ChessMove(position, new ChessPosition(row, 3), null));
+                }
+            }
+        }
+
         return possibleMoves;
     }
     
