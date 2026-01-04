@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import io.javalin.http.Context;
 import service.LoginRequest;
 import service.LoginResult;
+import service.LogoutRequest;
 import service.RegisterRequest;
 import service.RegisterResult;
 import service.UserService;
@@ -30,6 +31,8 @@ public class UserHandler {
     }
 
     public void handleLogout(Context ctx) {
-
+        LogoutRequest request = new LogoutRequest(ctx.header("authorization"));
+        userService.logout(request);
+        ctx.status(200);
     }
 }

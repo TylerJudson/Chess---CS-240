@@ -71,10 +71,20 @@ public class UserService {
     }
 
     public void logout(LogoutRequest logoutRequest) {
+        // Verify that the authtoken is not empty
+        if (logoutRequest.authtoken() == null || logoutRequest.authtoken().isBlank()) {
+            throw new BadRequestException("bad request");
+        }
 
+        // Verify that the authoken is valid
+        AuthData authData = this.userDAO.getAuthData(logoutRequest.authtoken());
+        if (authData == null) {
+            throw new UnauthorizedException("unauthorized");
+        }
+
+        // Remove the authdata
+        this.userDAO.deleteAuthData(authData.authToken());
     }
-
-
 
     private AuthData getAuthData(String username) {
         return new AuthData(UUID.randomUUID().toString(), username);

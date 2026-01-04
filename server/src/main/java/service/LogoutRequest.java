@@ -1,3 +1,3 @@
 package service;
 
-public record LogoutRequest(String username, String authtoken) {}
+public record LogoutRequest(String authtoken) {}

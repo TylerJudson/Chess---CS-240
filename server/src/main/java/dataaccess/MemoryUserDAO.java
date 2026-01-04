@@ -9,7 +9,7 @@ import model.UserData;
 public class MemoryUserDAO implements UserDAO {
 
     private Map<String, UserData> storage = new HashMap<>();
-    private Map<String, AuthData> authTokens = new HashMap<>();
+    private Map<String, AuthData> auth = new HashMap<>();
 
     @Override
     public void createUser(UserData user) {
@@ -18,12 +18,21 @@ public class MemoryUserDAO implements UserDAO {
 
     @Override
     public UserData getUser(String username) {
-        UserData user = storage.get(username);
-        return user != null ? user : null;
+        return storage.get(username);
     }
 
     @Override
     public void createAuth(AuthData authData) {
-        authTokens.put(authData.username(), authData);
+        auth.put(authData.authToken(), authData);
+    }
+
+    @Override
+    public AuthData getAuthData(String authToken) {
+        return auth.get(authToken);
+    }
+
+    @Override
+    public void deleteAuthData(String authToken) {
+       auth.remove(authToken);
     }
 }

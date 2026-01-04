@@ -2,6 +2,7 @@ package service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -27,14 +28,15 @@ public class UserServiceTests {
     // REGISTRATION TESTS
     @Test
     public void registrationForNewUser() {
-        RegisterRequest request = new RegisterRequest("Username123", "Password123", "email@test.com");
+        RegisterRequest request = new RegisterRequest("username", "password", "email");
         RegisterResult result = userService.register(request);
 
-        assertEquals("Username123", result.username());
+        assertEquals("username", result.username());
         assertNotNull(result.authToken());
 
-        assertNotNull(userDAO.getUser("Username123"));
-        assertEquals(new UserData("Username123", "Password123", "email@test.com"), userDAO.getUser("Username123"));
+        assertNotNull(userDAO.getUser("username"));
+        assertEquals(new UserData("username", "password", "email"), userDAO.getUser("username"));
+        assertNotNull(userDAO.getAuthData(result.authToken()));
     }
 
     @Test
@@ -131,10 +133,50 @@ public class UserServiceTests {
     }
 
 
+    // LOGOUT TESTS
+    @Test
+    public void logoutSuccess() {
+        RegisterResult result = registerBasicUser();
+
+        LogoutRequest request = new LogoutRequest(result.authToken());
+        userService.logout(request);
+
+        assertNull(userDAO.getAuthData(request.authtoken()));
+    }
+
+    @Test
+    public void logoutEmptyAuth() {
+        LogoutRequest request1 = new LogoutRequest("");
+        LogoutRequest request2 = new LogoutRequest(null);
+        LogoutRequest request3 = new LogoutRequest("     ");
+        LogoutRequest request4 = new LogoutRequest("\n");
+
+        BadRequestException ex1 = assertThrows(BadRequestException.class, () -> userService.logout(request1));
+        assertEquals("bad request", ex1.getMessage());
+
+        BadRequestException ex2 = assertThrows(BadRequestException.class, () -> userService.logout(request2));
+        assertEquals("bad request", ex2.getMessage());
+
+        BadRequestException ex3 = assertThrows(BadRequestException.class, () -> userService.logout(request3));
+        assertEquals("bad request", ex3.getMessage());
+
+        BadRequestException ex4 = assertThrows(BadRequestException.class, () -> userService.logout(request4));
+        assertEquals("bad request", ex4.getMessage());        
+    }
+
+    @Test
+    public void logoutInvalidAuth() {
+        registerBasicUser();
+
+        LogoutRequest request = new LogoutRequest("invalid");
+        UnauthorizedException ex = assertThrows(UnauthorizedException.class, () -> userService.logout(request));
+        assertEquals("unauthorized", ex.getMessage());
+    }
+
+
     private RegisterResult registerBasicUser() {
         RegisterRequest request = new RegisterRequest("username", "password", "email");
         return userService.register(request);
     }
-
 
 }
