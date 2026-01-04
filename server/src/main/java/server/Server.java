@@ -1,5 +1,10 @@
 package server;
 
+import java.util.Map;
+
+import exceptions.BadRequestException;
+import exceptions.ForbiddenException;
+import exceptions.UnauthorizedException;
 import handler.UserHandler;
 import io.javalin.*;
 import service.UserService;
@@ -22,6 +27,23 @@ public class Server {
         javalin.post("/session", userHandler::handleLogin);
         javalin.delete("/session", userHandler::handleLogout);
 
+
+        // Register exceptions
+        javalin.exception(BadRequestException.class, (e, ctx) -> {
+            ctx.status(400).json(Map.of("message", "Error: " + e.getMessage()));
+        });
+
+        javalin.exception(UnauthorizedException.class, (e, ctx) -> {
+            ctx.status(401).json(Map.of("message", "Error: " + e.getMessage()));
+        });
+
+        javalin.exception(ForbiddenException.class, (e, ctx) -> {
+            ctx.status(403).json(Map.of("message", "Error: " + e.getMessage()));
+        });
+
+        javalin.exception(Exception.class, (e, ctx) -> {
+            ctx.status(500).json(Map.of("message", "Error: " + e.getMessage()));
+        });
     }
 
     public int run(int desiredPort) {
