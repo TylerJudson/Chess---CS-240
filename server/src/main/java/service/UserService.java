@@ -6,6 +6,7 @@ import dataaccess.MemoryUserDAO;
 import dataaccess.UserDAO;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenException;
+import exceptions.UnauthorizedException;
 import model.AuthData;
 import model.UserData;
 
@@ -23,15 +24,15 @@ public class UserService {
 
     public RegisterResult register(RegisterRequest registerRequest) {
         // Validate the properties of register request
-        if (registerRequest.username() == null || registerRequest.username().isEmpty() 
-            || registerRequest.password() == null || registerRequest.password().isEmpty() 
-            || registerRequest.email() == null || registerRequest.email().isEmpty()) {
-            throw new BadRequestException("Bad request");
+        if (registerRequest.username() == null || registerRequest.username().isBlank() 
+            || registerRequest.password() == null || registerRequest.password().isBlank() 
+            || registerRequest.email() == null || registerRequest.email().isBlank()) {
+            throw new BadRequestException("bad request");
         }
 
         // Check to see if username already exists
         if (userDAO.getUser(registerRequest.username()) != null) {
-            throw new ForbiddenException("Already taken");
+            throw new ForbiddenException("already taken");
         }
 
         // Create user
@@ -45,8 +46,28 @@ public class UserService {
     }
 
     public LoginResult login(LoginRequest loginRequest) {
+        // Validate the properties of login request
+        if (loginRequest.username() == null || loginRequest.username().isBlank()
+            || loginRequest.password() == null || loginRequest.password().isBlank()) {
+                throw new BadRequestException("bad request");
+        }
 
-        return null;
+        // Verify that user exists
+        UserData userData = this.userDAO.getUser(loginRequest.username());
+        if (userData == null) {
+            throw new UnauthorizedException("unauthorized");
+        }
+
+        // Verify password
+        if (!userData.password().equals(loginRequest.password())) {
+            throw new UnauthorizedException("unauthorized");
+        }
+
+        // Create auth data
+        AuthData authData = getAuthData(userData.username());
+        this.userDAO.createAuth(authData);
+
+        return new LoginResult(userData.username(), authData.authToken());
     }
 
     public void logout(LogoutRequest logoutRequest) {

@@ -3,6 +3,8 @@ package handler;
 import com.google.gson.Gson;
 
 import io.javalin.http.Context;
+import service.LoginRequest;
+import service.LoginResult;
 import service.RegisterRequest;
 import service.RegisterResult;
 import service.UserService;
@@ -22,7 +24,9 @@ public class UserHandler {
     }
 
     public void handleLogin(Context ctx) {
-
+        LoginRequest request = gson.fromJson(ctx.body(), LoginRequest.class);
+        LoginResult result = userService.login(request);
+        ctx.status(200).result(gson.toJson(result));
     }
 
     public void handleLogout(Context ctx) {

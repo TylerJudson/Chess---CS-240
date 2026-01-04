@@ -11,6 +11,7 @@ import dataaccess.MemoryUserDAO;
 import dataaccess.UserDAO;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenException;
+import exceptions.UnauthorizedException;
 import model.UserData;
 
 public class UserServiceTests {
@@ -38,37 +39,102 @@ public class UserServiceTests {
 
     @Test
     public void registrationFailsWithMissingFields() {
-        RegisterRequest request1 = new RegisterRequest("", "password", "email");
+        RegisterRequest request1 = new RegisterRequest("     ", "password", "email");
         RegisterRequest request2 = new RegisterRequest("username", "", "email");
         RegisterRequest request3 = new RegisterRequest("username", "password", "");
-        RegisterRequest request4 = new RegisterRequest(null, "", "email");
-        RegisterRequest request5 = new RegisterRequest("", "", null);
+        RegisterRequest request4 = new RegisterRequest(null, "\n", "email");
+        RegisterRequest request5 = new RegisterRequest("\t", "", null);
 
 
         BadRequestException ex1 = assertThrows(BadRequestException.class, () -> userService.register(request1));
-        assertEquals("Bad request", ex1.getMessage());
+        assertEquals("bad request", ex1.getMessage());
 
         BadRequestException ex2 = assertThrows(BadRequestException.class, () -> userService.register(request2));
-        assertEquals("Bad request", ex2.getMessage());
+        assertEquals("bad request", ex2.getMessage());
 
         BadRequestException ex3 = assertThrows(BadRequestException.class, () -> userService.register(request3));
-        assertEquals("Bad request", ex3.getMessage());
+        assertEquals("bad request", ex3.getMessage());
 
         BadRequestException ex4 = assertThrows(BadRequestException.class, () -> userService.register(request4));
-        assertEquals("Bad request", ex4.getMessage());
+        assertEquals("bad request", ex4.getMessage());
 
         BadRequestException ex5 = assertThrows(BadRequestException.class, () -> userService.register(request5));
-        assertEquals("Bad request", ex5.getMessage());
+        assertEquals("bad request", ex5.getMessage());
     }
 
     @Test
     public void registrationFailsWithExistingUser() {
-        RegisterRequest request = new RegisterRequest("Username123", "Password123", "email@test.com");
-        userService.register(request);
+        registerBasicUser();
 
-        RegisterRequest duplicateRequest = new RegisterRequest("Username123", "fd", "fd");
+        RegisterRequest duplicateRequest = new RegisterRequest("username", "fd", "fd");
 
         ForbiddenException ex = assertThrows(ForbiddenException.class, () -> userService.register(duplicateRequest));
-        assertEquals("Already taken", ex.getMessage());
+        assertEquals("already taken", ex.getMessage());
     }
+
+
+    // LOGIN TESTS
+    @Test
+    public void loginSuccess() {
+        registerBasicUser();
+
+        LoginRequest request = new LoginRequest("username", "password");
+        LoginResult result = userService.login(request);
+
+        assertEquals(result.username(), "username");
+        assertNotNull(result.authToken());
+    }
+
+    @Test
+    public void loginMissingFields() {
+        LoginRequest request1 = new LoginRequest("", "");
+        LoginRequest request2 = new LoginRequest("te", "");
+        LoginRequest request3 = new LoginRequest("", "df");
+        LoginRequest request4 = new LoginRequest("    ", "df");
+        LoginRequest request5 = new LoginRequest("df", "\n");
+        LoginRequest request6 = new LoginRequest("df", "\t");
+
+        BadRequestException ex1 = assertThrows(BadRequestException.class, () -> userService.login(request1));
+        assertEquals("bad request", ex1.getMessage());
+
+        BadRequestException ex2 = assertThrows(BadRequestException.class, () -> userService.login(request2));
+        assertEquals("bad request", ex2.getMessage());
+
+        BadRequestException ex3 = assertThrows(BadRequestException.class, () -> userService.login(request3));
+        assertEquals("bad request", ex3.getMessage());
+
+        BadRequestException ex4 = assertThrows(BadRequestException.class, () -> userService.login(request4));
+        assertEquals("bad request", ex4.getMessage());
+
+        BadRequestException ex5 = assertThrows(BadRequestException.class, () -> userService.login(request5));
+        assertEquals("bad request", ex5.getMessage());
+
+        BadRequestException ex6 = assertThrows(BadRequestException.class, () -> userService.login(request6));
+        assertEquals("bad request", ex6.getMessage());
+    }
+
+    @Test
+    public void loginWithInvalidUsernmae() {
+        LoginRequest request = new LoginRequest("username", "password");
+
+        UnauthorizedException ex = assertThrows(UnauthorizedException.class, () -> userService.login(request));
+        assertEquals("unauthorized", ex.getMessage());
+    }
+
+    @Test
+    public void loginWithBadPassword() {
+        registerBasicUser();
+        LoginRequest request = new LoginRequest("username", "wrong");
+
+        UnauthorizedException ex = assertThrows(UnauthorizedException.class, () -> userService.login(request));
+        assertEquals("unauthorized", ex.getMessage());
+    }
+
+
+    private RegisterResult registerBasicUser() {
+        RegisterRequest request = new RegisterRequest("username", "password", "email");
+        return userService.register(request);
+    }
+
+
 }
