@@ -11,10 +11,14 @@ import model.UserData;
 
 public class UserService {
 
-    UserDAO userDAO;
+    private UserDAO userDAO;
 
     public UserService() {
         this.userDAO = new MemoryUserDAO();
+    }
+
+    public UserService(UserDAO dao) {
+        this.userDAO = dao;
     }
 
     public RegisterResult register(RegisterRequest registerRequest) {
