@@ -88,13 +88,13 @@ public class SQLUserDAOTests {
     }
 
     @Test
-    public void createAuthFailsForInvalidUsername() {
+    public void createAuthFailsForDuplicateToken() {
         userDAO.createUser(basicUser);
-        userDAO.createAuth(new AuthData("token", "invalid"));
+        AuthData basicAuth = new AuthData("token", basicUser.username());
+        userDAO.createAuth(basicAuth);
 
-        AuthData fetched = userDAO.getAuthData("token");
-
-        assertNull(fetched);
+        ForbiddenException ex = assertThrows(ForbiddenException.class, () -> userDAO.createAuth(basicAuth));
+        assertEquals("already taken", ex.getMessage());    
     }
 
     // GET AUTH TESTS
