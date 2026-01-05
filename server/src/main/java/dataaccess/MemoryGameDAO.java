@@ -31,4 +31,9 @@ public class MemoryGameDAO implements GameDAO {
     public void updateGame(GameData gameData) {
         this.games.put(gameData.gameID(), gameData);
     }
+
+    @Override
+    public void clearAllData() {
+        this.games = new HashMap<>();
+    }
 }

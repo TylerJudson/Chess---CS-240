@@ -96,4 +96,8 @@ public class GameService {
             this.gameDAO.updateGame(newGameData);
         }
     }
+
+    public void clearAllData() {
+        this.gameDAO.clearAllData();
+    }
 }

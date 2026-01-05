@@ -93,6 +93,10 @@ public class UserService {
     public AuthData getAuthData(String authToken) {
         return this.userDAO.getAuthData(authToken);
     }
+
+    public void clearAllData() {
+        this.userDAO.clearAllData();
+    }
     
     private AuthData createAuthData(String username) {
         return new AuthData(UUID.randomUUID().toString(), username);

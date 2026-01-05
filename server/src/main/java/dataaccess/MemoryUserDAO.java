@@ -35,4 +35,10 @@ public class MemoryUserDAO implements UserDAO {
     public void deleteAuthData(String authToken) {
        auth.remove(authToken);
     }
+
+    @Override
+    public void clearAllData() {
+        this.storage = new HashMap<>();
+        this.auth = new HashMap<>();
+    }
 }

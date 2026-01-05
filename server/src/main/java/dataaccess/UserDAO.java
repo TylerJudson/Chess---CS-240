@@ -9,4 +9,5 @@ public interface UserDAO {
     void createAuth(AuthData authData);
     AuthData getAuthData(String authToken);
     void deleteAuthData(String authToken);
+    void clearAllData();
 }
