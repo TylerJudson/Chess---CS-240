@@ -74,7 +74,7 @@ public class PreloginClient implements Client {
 
             PrintUtilities.printSuccess("SUCCESS: your account was created with username '" + result.username() + "'.");
 
-            return new ClientResult(ClientType.POSTLOGIN, result.authToken());
+            return new ClientResult(ClientType.POSTLOGIN, result.authToken(), -1);
         }
         catch (Exception ex) {
             PrintUtilities.printError(ex.getMessage() + ".");
@@ -96,7 +96,7 @@ public class PreloginClient implements Client {
 
             PrintUtilities.printSuccess("SUCCESS: your are now logged in.");
 
-            return new ClientResult(ClientType.POSTLOGIN, result.authToken());
+            return new ClientResult(ClientType.POSTLOGIN, result.authToken(), -1);
         }
         catch (Exception ex) {
             if (ex.getMessage().equals("Error: unauthorized")) {
