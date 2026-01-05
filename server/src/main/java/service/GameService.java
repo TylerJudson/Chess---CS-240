@@ -5,8 +5,8 @@ import java.util.Collection;
 import chess.ChessGame;
 import dataaccess.GameDAO;
 import dataaccess.MemoryGameDAO;
-import exceptions.AlreadyTakenException;
 import exceptions.BadRequestException;
+import exceptions.ForbiddenException;
 import exceptions.UnauthorizedException;
 import model.AuthData;
 import model.GameData;
@@ -41,7 +41,7 @@ public class GameService {
         }
 
         // Create the game
-        GameData gameData = new GameData(nextGameId, "", "", request.gameName(), new ChessGame());
+        GameData gameData = new GameData(nextGameId, null, null, request.gameName(), new ChessGame());
         this.gameDAO.createGame(gameData);
         nextGameId++;
 
@@ -80,10 +80,10 @@ public class GameService {
         }
 
         // Check to see if the color is already in use
-        if ((request.playerColor().equals("WHITE") && !gameData.whiteUsername().isBlank())
-            || request.playerColor().equals("BLACK") && !gameData.blackUsername().isBlank()
+        if ((request.playerColor().equals("WHITE") && gameData.whiteUsername() != null && !gameData.whiteUsername().isBlank())
+            || request.playerColor().equals("BLACK") && gameData.blackUsername() != null && !gameData.blackUsername().isBlank()
         ) {
-            throw new AlreadyTakenException("already taken");
+            throw new ForbiddenException("already taken");
         }
 
         // Update the game

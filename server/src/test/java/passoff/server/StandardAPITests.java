@@ -16,7 +16,7 @@ public class StandardAPITests {
     private static TestCreateRequest createRequest;
     private static TestServerFacade serverFacade;
     private static Server server;
-    private String existingAuth;
+    private static String existingAuth;
 
     // ### TESTING SETUP/CLEANUP ###
 
@@ -44,6 +44,7 @@ public class StandardAPITests {
         //one user already logged in
         TestAuthResult regResult = serverFacade.register(existingUser);
         existingAuth = regResult.getAuthToken();
+        System.out.println("DEBUG: @BeforeEach set existingAuth = '" + existingAuth + "'");
     }
 
     // ### SERVER-LEVEL API TESTS ###
@@ -144,6 +145,7 @@ public class StandardAPITests {
     @DisplayName("Normal Logout")
     public void logoutSuccess() {
         //log out existing user
+        System.out.println("DEBUG: existingAuth = '" + existingAuth + "'");
         TestResult result = serverFacade.logout(existingAuth);
 
         assertHttpOk(result);

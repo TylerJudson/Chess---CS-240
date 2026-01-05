@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 
 import io.javalin.http.Context;
 import service.ApplicationService;
-import service.ClearApplicationRequest;
 
 public class ApplicationHandler {
     private ApplicationService applicationService;
@@ -15,8 +14,7 @@ public class ApplicationHandler {
     }
 
     public void handleClearAppllication(Context ctx) {
-        ClearApplicationRequest request = new ClearApplicationRequest(ctx.header("authorization"));
-        this.applicationService.clearApplication(request);
+        this.applicationService.clearApplication();
         ctx.status(200);
     }
 }

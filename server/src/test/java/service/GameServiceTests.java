@@ -16,8 +16,8 @@ import dataaccess.GameDAO;
 import dataaccess.MemoryGameDAO;
 import dataaccess.MemoryUserDAO;
 import dataaccess.UserDAO;
-import exceptions.AlreadyTakenException;
 import exceptions.BadRequestException;
+import exceptions.ForbiddenException;
 import exceptions.UnauthorizedException;
 import model.GameData;
 
@@ -136,7 +136,7 @@ public class GameServiceTests {
 
         RegisterResult register2Result = registerBasicUser("username2");
         JoinGameRequest joinGameRequest2 = new JoinGameRequest("WHITE", createGameResult.gameData().gameID(), register2Result.authToken());
-        AlreadyTakenException ex = assertThrows(AlreadyTakenException.class, () -> gameService.joinGame(joinGameRequest2));
+        ForbiddenException ex = assertThrows(ForbiddenException.class, () -> gameService.joinGame(joinGameRequest2));
         assertEquals(ex.getMessage(), "already taken");
     }
 
@@ -150,7 +150,7 @@ public class GameServiceTests {
 
         RegisterResult register2Result = registerBasicUser("username2");
         JoinGameRequest joinGameRequest2 = new JoinGameRequest("BLACK", createGameResult.gameData().gameID(), register2Result.authToken());
-        AlreadyTakenException ex = assertThrows(AlreadyTakenException.class, () -> gameService.joinGame(joinGameRequest2));
+        ForbiddenException ex = assertThrows(ForbiddenException.class, () -> gameService.joinGame(joinGameRequest2));
         assertEquals(ex.getMessage(), "already taken");
     }
 

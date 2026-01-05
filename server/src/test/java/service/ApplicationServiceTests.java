@@ -1,9 +1,7 @@
 package service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,7 +10,6 @@ import dataaccess.GameDAO;
 import dataaccess.MemoryGameDAO;
 import dataaccess.MemoryUserDAO;
 import dataaccess.UserDAO;
-import exceptions.UnauthorizedException;
 import model.GameData;
 
 public class ApplicationServiceTests {
@@ -46,21 +43,12 @@ public class ApplicationServiceTests {
         assertNotNull(createdGame);
 
         // Clear all data
-        applicationService.clearApplication(new ClearApplicationRequest(registerResult.authToken()));
+        applicationService.clearApplication();
 
         // Make sure all the data is cleared
         assertNull(userDAO.getUser("username"));
         assertNull(gameDAO.getGame(createGameResult.gameData().gameID()));
     }
-
-    @Test
-    public void clearApplicationInvalidAuthFails() {
-        UnauthorizedException ex = assertThrows(
-                UnauthorizedException.class, 
-                () -> applicationService.clearApplication(new ClearApplicationRequest("invalid")));
-        assertEquals("unauthorized", ex.getMessage());
-    }
-
 
 
     private RegisterResult registerBasicUser() {
