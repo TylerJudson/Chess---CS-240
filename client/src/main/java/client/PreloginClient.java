@@ -1,9 +1,7 @@
 package client;
-import static ui.EscapeSequences.*;
 
 import java.util.Scanner;
 
-import exceptions.ResponseException;
 import requests.RegisterRequest;
 import results.RegisterResult;
 import server.ServerFacade;
@@ -44,8 +42,8 @@ public class PreloginClient implements Client {
                 break;
 
             default:
-                System.out.println(SET_TEXT_COLOR_RED + "Error: Unkown Command: '" + str + "'."
-                                    + RESET_TEXT_COLOR + " Type \"help\" to see available commands.\n");
+                PrintUtilities.printError("Error: Unkown Command: '" + str + "'.");
+                System.out.println("Type \"help\" to see available commands.\n");
                 break;
         }
 
@@ -54,14 +52,7 @@ public class PreloginClient implements Client {
 
 
     private ClientResult register() {
-        System.out.println(SET_TEXT_BOLD + SET_TEXT_COLOR_DARK_GREY +
-                    """
-
-                    REGISTER
-                    --------------------------------------------
-                    """ +
-                    RESET_TEXT_BOLD_FAINT + RESET_TEXT_COLOR
-        );
+        PrintUtilities.printSection("REGISTER");
 
         PromptResult promptResult = promptUsernameAndPassword();
         if (promptResult == null) {
@@ -71,7 +62,7 @@ public class PreloginClient implements Client {
         System.out.print("Email: ");
         String email = scanner.nextLine();
         if (email.isBlank()) {
-            System.out.println(SET_TEXT_COLOR_RED + "Error: email can't be blank.\n\n" + RESET_TEXT_COLOR);
+            PrintUtilities.printError("Error: email can't be blank.");
             return null;
         }
 
@@ -79,27 +70,20 @@ public class PreloginClient implements Client {
             RegisterResult result = this.serverFacade.register(new RegisterRequest(promptResult.username(), 
                                             promptResult.password(), email));
 
-            System.out.println(SET_TEXT_COLOR_GREEN + "SUCCESS: your account was created with username '" 
-                                + result.username() + "'.\n\n" + RESET_TEXT_COLOR);
+            PrintUtilities.printSuccess("SUCCESS: your account was created with username '" + result.username() + "'.");
 
             return new ClientResult(ClientType.POSTLOGIN, result.authToken());
         }
         catch (Exception ex) {
-            System.out.println(SET_TEXT_COLOR_RED + ex.getMessage() + ".\n\n" + RESET_TEXT_COLOR);
+            PrintUtilities.printError(ex.getMessage() + ".");
         }
 
         return null;
     }
     
     private ClientResult login() {
-        System.out.println(SET_TEXT_BOLD + SET_TEXT_COLOR_LIGHT_GREY +
-                    """
-
-                    LOGIN
-                    --------------------------------------------
-                    """ +
-                    RESET_TEXT_BOLD_FAINT + RESET_TEXT_COLOR
-        );
+        PrintUtilities.printSection("LOGIN");
+        
         PromptResult promptResult = promptUsernameAndPassword();
         if (promptResult == null) {
             return null;
@@ -113,14 +97,14 @@ public class PreloginClient implements Client {
         System.out.print("Username: ");
         String username = scanner.nextLine();
         if (username.isBlank()) {
-            System.out.println(SET_TEXT_COLOR_RED + "Error: username can't be blank.\n\n" + RESET_TEXT_COLOR);
+            PrintUtilities.printError("Error: username can't be blank.");
             return null;
         }
 
         System.out.print("Password: ");
         String password = scanner.nextLine();
         if (password.isBlank()) {
-            System.out.println(SET_TEXT_COLOR_RED + "Error: password can't be blank.\n\n" + RESET_TEXT_COLOR);
+            PrintUtilities.printError("Error: password can't be blank.");
             return null;
         }
         
