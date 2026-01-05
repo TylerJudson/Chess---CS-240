@@ -1,10 +1,59 @@
 package client;
 
-import chess.*;
+import java.util.Scanner;
+
+import static ui.EscapeSequences.*;
 
 public class ClientMain {
+
+    static Client client;
+
     public static void main(String[] args) {
-        var piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
-        System.out.println("♕ 240 Chess Client: " + piece);
+        client = new PreloginClient();
+        run();
+    }
+
+
+    public static void run() {
+        System.out.println(SET_TEXT_BOLD + SET_TEXT_COLOR_BLUE +
+                    """
+
+
+                    --------------------------------------------
+                    |            ♕ Chess Client ♕              |
+                    --------------------------------------------
+                    """ +
+                    RESET_TEXT_BOLD_FAINT + RESET_TEXT_COLOR
+        );
+
+
+        client.help();
+
+        Scanner scanner = new Scanner(System.in);
+        System.out.print(">> ");
+        String line = scanner.nextLine();
+        while (!line.equals("quit") && !line.equals("q")) {
+            try {
+                ClientType newClient = client.eval(line.toLowerCase());
+                if (newClient == ClientType.PRELOGIN) {
+
+                }
+                else if (newClient == ClientType.POSTLOGIN) {
+
+                }
+                else if (newClient == ClientType.GAME) {
+
+                }
+            } catch (Throwable e) {
+                var msg = e.toString();
+                System.out.print(msg);
+            }
+
+            System.out.print(">> ");
+            line = scanner.nextLine();
+        }
+
+        scanner.close();
+        System.out.println();
     }
 }
