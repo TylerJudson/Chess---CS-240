@@ -2,10 +2,11 @@ package service;
 
 import java.util.UUID;
 
-import dataaccess.MemoryUserDAO;
+import dataaccess.SQLUserDAO;
 import dataaccess.UserDAO;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenException;
+import exceptions.ServerErrorException;
 import exceptions.UnauthorizedException;
 import model.AuthData;
 import model.UserData;
@@ -15,14 +16,14 @@ public class UserService {
     private UserDAO userDAO;
 
     public UserService() {
-        this.userDAO = new MemoryUserDAO();
+        this.userDAO = new SQLUserDAO();
     }
 
     public UserService(UserDAO dao) {
         this.userDAO = dao;
     }
 
-    public RegisterResult register(RegisterRequest registerRequest) {
+    public RegisterResult register(RegisterRequest registerRequest) throws ServerErrorException {
         // Validate the properties of register request
         if (registerRequest.username() == null || registerRequest.username().isBlank() 
             || registerRequest.password() == null || registerRequest.password().isBlank() 
