@@ -5,8 +5,10 @@ import java.util.Collection;
 import chess.ChessGame;
 import dataaccess.GameDAO;
 import dataaccess.MemoryGameDAO;
+import exceptions.AlreadyTakenException;
 import exceptions.BadRequestException;
 import exceptions.UnauthorizedException;
+import model.AuthData;
 import model.GameData;
 
 public class GameService {
@@ -58,9 +60,40 @@ public class GameService {
     }
 
     public void joinGame(JoinGameRequest request) {
+        // Validate the properties of request
+        if (request.playerColor() == null || !(request.playerColor().equals("WHITE") || request.playerColor().equals("BLACK"))
+            || request.authToken() == null || request.authToken().isBlank()
+        ) {
+            throw new BadRequestException("bad request");
+        }
 
+        // Verify that the authoken is valid
+        AuthData authData = this.userService.getAuthData(request.authToken());
+        if (authData == null) {
+            throw new UnauthorizedException("unathorized");
+        }
+
+        // Verify that the game exists
+        GameData gameData = this.gameDAO.getGame(request.gameID());
+        if (gameData == null) {
+            throw new BadRequestException("bad request");
+        }
+
+        // Check to see if the color is already in use
+        if ((request.playerColor().equals("WHITE") && !gameData.whiteUsername().isBlank())
+            || request.playerColor().equals("BLACK") && !gameData.blackUsername().isBlank()
+        ) {
+            throw new AlreadyTakenException("already taken");
+        }
+
+        // Update the game
+        if (request.playerColor().equals("WHITE")) {
+            GameData newGameData = new GameData(gameData.gameID(), authData.username(), gameData.blackUsername(), gameData.gameName(), gameData.game());
+            this.gameDAO.updateGame(newGameData);
+        }
+        else {
+            GameData newGameData = new GameData(gameData.gameID(), gameData.whiteUsername(), authData.username(), gameData.gameName(), gameData.game());
+            this.gameDAO.updateGame(newGameData);
+        }
     }
-
-    
-
 }

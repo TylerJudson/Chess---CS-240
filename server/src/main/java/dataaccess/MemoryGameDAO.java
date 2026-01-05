@@ -14,12 +14,12 @@ public class MemoryGameDAO implements GameDAO {
 
     @Override
     public void createGame(GameData gameData) {
-        this.games.put(gameData.gameId(), gameData);
+        this.games.put(gameData.gameID(), gameData);
     }
 
     @Override
-    public GameData getGame(int gameId) {
-        return this.games.get(gameId);
+    public GameData getGame(int gameID) {
+        return this.games.get(gameID);
     }
 
     @Override
@@ -29,6 +29,6 @@ public class MemoryGameDAO implements GameDAO {
 
     @Override
     public void updateGame(GameData gameData) {
-        this.games.put(gameData.gameId(), gameData);
+        this.games.put(gameData.gameID(), gameData);
     }
 }

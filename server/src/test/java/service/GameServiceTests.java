@@ -16,6 +16,7 @@ import dataaccess.GameDAO;
 import dataaccess.MemoryGameDAO;
 import dataaccess.MemoryUserDAO;
 import dataaccess.UserDAO;
+import exceptions.AlreadyTakenException;
 import exceptions.BadRequestException;
 import exceptions.UnauthorizedException;
 import model.GameData;
@@ -42,9 +43,9 @@ public class GameServiceTests {
         CreateGameRequest createGameRequest = new CreateGameRequest("gameName", registerResult.authToken());
         CreateGameResult createGameResult = gameService.createGame(createGameRequest);
 
-        assertNotNull(createGameResult.gameData().gameId());
+        assertNotNull(createGameResult.gameData().gameID());
         
-        GameData createdGame = gameDAO.getGame(createGameResult.gameData().gameId());
+        GameData createdGame = gameDAO.getGame(createGameResult.gameData().gameID());
         assertNotNull(createdGame);
         assertEquals(createdGame.gameName(), "gameName");
     }
@@ -105,8 +106,61 @@ public class GameServiceTests {
         assertEquals("unauthorized", ex.getMessage());
     }
 
+
+    // JOIN GAME TESTS
+    @Test
+    public void joinGameSucess() {
+        RegisterResult register1Result = registerBasicUser();
+        CreateGameRequest createGameRequest = new CreateGameRequest("gameName", register1Result.authToken());
+        CreateGameResult createGameResult = gameService.createGame(createGameRequest);
+
+        // Check joining as white works
+        JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE", createGameResult.gameData().gameID(), register1Result.authToken());
+        gameService.joinGame(joinGameRequest);
+        assertEquals(gameDAO.getGame(createGameResult.gameData().gameID()).whiteUsername(), "username");
+
+        // Check joining as black works
+        RegisterResult register2Result = registerBasicUser("username2");
+        JoinGameRequest joinGameRequest2 = new JoinGameRequest("BLACK", createGameResult.gameData().gameID(), register2Result.authToken());
+        gameService.joinGame(joinGameRequest2);
+        assertEquals(gameDAO.getGame(createGameResult.gameData().gameID()).blackUsername(), "username2");
+    }
+
+    @Test
+    public void joinGameAlreadyTakenWHITEFails() {
+        RegisterResult register1Result = registerBasicUser();
+        CreateGameRequest createGameRequest = new CreateGameRequest("gameName", register1Result.authToken());
+        CreateGameResult createGameResult = gameService.createGame(createGameRequest);
+        JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE", createGameResult.gameData().gameID(), register1Result.authToken());
+        gameService.joinGame(joinGameRequest);
+
+        RegisterResult register2Result = registerBasicUser("username2");
+        JoinGameRequest joinGameRequest2 = new JoinGameRequest("WHITE", createGameResult.gameData().gameID(), register2Result.authToken());
+        AlreadyTakenException ex = assertThrows(AlreadyTakenException.class, () -> gameService.joinGame(joinGameRequest2));
+        assertEquals(ex.getMessage(), "already taken");
+    }
+
+    @Test
+    public void joinGameAlreadyTakenBLACKFails() {
+        RegisterResult register1Result = registerBasicUser();
+        CreateGameRequest createGameRequest = new CreateGameRequest("gameName", register1Result.authToken());
+        CreateGameResult createGameResult = gameService.createGame(createGameRequest);
+        JoinGameRequest joinGameRequest = new JoinGameRequest("BLACK", createGameResult.gameData().gameID(), register1Result.authToken());
+        gameService.joinGame(joinGameRequest);
+
+        RegisterResult register2Result = registerBasicUser("username2");
+        JoinGameRequest joinGameRequest2 = new JoinGameRequest("BLACK", createGameResult.gameData().gameID(), register2Result.authToken());
+        AlreadyTakenException ex = assertThrows(AlreadyTakenException.class, () -> gameService.joinGame(joinGameRequest2));
+        assertEquals(ex.getMessage(), "already taken");
+    }
+
     private RegisterResult registerBasicUser() {
-        RegisterRequest request = new RegisterRequest("username", "password", "email");
+        return registerBasicUser("username");
+    }
+
+
+    private RegisterResult registerBasicUser(String username) {
+        RegisterRequest request = new RegisterRequest(username, "password", "email@example.com");
         return userService.register(request);
     }
 }

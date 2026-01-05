@@ -8,6 +8,7 @@ import io.javalin.http.Context;
 import service.CreateGameRequest;
 import service.CreateGameResult;
 import service.GameService;
+import service.JoinGameRequest;
 import service.ListGamesRequest;
 import service.ListGamesResult;
 
@@ -24,7 +25,7 @@ public class GameHandler {
         CreateGameRequest bodyRequest = gson.fromJson(ctx.body(), CreateGameRequest.class);
         CreateGameRequest request = new CreateGameRequest(bodyRequest.gameName(), ctx.header("authorization"));
         CreateGameResult result = this.gameService.createGame(request);
-        ctx.status(200).result(gson.toJson(Map.of("gameID", result.gameData().gameId())));
+        ctx.status(200).result(gson.toJson(Map.of("gameID", result.gameData().gameID())));
     }
 
     public void handleListGames(Context ctx) {
@@ -34,6 +35,9 @@ public class GameHandler {
     }
 
     public void handleJoinGames(Context ctx) {
-        
+        JoinGameRequest bodyrequest = gson.fromJson(ctx.body(), JoinGameRequest.class);
+        JoinGameRequest request = new JoinGameRequest(bodyrequest.playerColor(), bodyrequest.gameID(), ctx.header("authorization"));
+        this.gameService.joinGame(request);
+        ctx.status(200);
     }
 }

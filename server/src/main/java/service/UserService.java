@@ -39,7 +39,7 @@ public class UserService {
         UserData user = new UserData(registerRequest.username(), registerRequest.password(), registerRequest.email());
         this.userDAO.createUser(user);
 
-        AuthData authData = getAuthData(user.username());
+        AuthData authData = createAuthData(user.username());
         this.userDAO.createAuth(authData);
 
         return new RegisterResult(user.username(), authData.authToken());
@@ -64,7 +64,7 @@ public class UserService {
         }
 
         // Create auth data
-        AuthData authData = getAuthData(userData.username());
+        AuthData authData = createAuthData(userData.username());
         this.userDAO.createAuth(authData);
 
         return new LoginResult(userData.username(), authData.authToken());
@@ -90,7 +90,11 @@ public class UserService {
         return !(this.userDAO.getAuthData(authToken) == null);
     }
 
-    private AuthData getAuthData(String username) {
+    public AuthData getAuthData(String authToken) {
+        return this.userDAO.getAuthData(authToken);
+    }
+    
+    private AuthData createAuthData(String username) {
         return new AuthData(UUID.randomUUID().toString(), username);
     }
 }
