@@ -2,7 +2,9 @@ package service;
 
 import java.util.UUID;
 
-import dataaccess.MemoryUserDAO;
+import org.mindrot.jbcrypt.BCrypt;
+
+import dataaccess.SQLUserDAO;
 import dataaccess.UserDAO;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenException;
@@ -15,7 +17,7 @@ public class UserService {
     private UserDAO userDAO;
 
     public UserService() {
-        this.userDAO = new MemoryUserDAO();
+        this.userDAO = new SQLUserDAO();
     }
 
     public UserService(UserDAO dao) {
@@ -35,8 +37,11 @@ public class UserService {
             throw new ForbiddenException("already taken");
         }
 
+        // Hash the password
+        String hashedPassword = this.hashPassword(registerRequest.password());
+
         // Create user
-        UserData user = new UserData(registerRequest.username(), registerRequest.password(), registerRequest.email());
+        UserData user = new UserData(registerRequest.username(), hashedPassword, registerRequest.email());
         this.userDAO.createUser(user);
 
         AuthData authData = createAuthData(user.username());
@@ -59,7 +64,7 @@ public class UserService {
         }
 
         // Verify password
-        if (!userData.password().equals(loginRequest.password())) {
+        if (!this.verifyPassword(loginRequest.password(), userData.password())) {
             throw new UnauthorizedException("unauthorized");
         }
 
@@ -100,5 +105,13 @@ public class UserService {
     
     private AuthData createAuthData(String username) {
         return new AuthData(UUID.randomUUID().toString(), username);
+    }
+
+    private String hashPassword(String password) {
+        return BCrypt.hashpw(password, BCrypt.gensalt());
+    }
+
+    private boolean verifyPassword(String textPassword, String hashedPassword) {
+        return BCrypt.checkpw(textPassword, hashedPassword);
     }
 }

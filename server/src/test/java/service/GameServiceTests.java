@@ -13,8 +13,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import dataaccess.GameDAO;
-import dataaccess.MemoryGameDAO;
-import dataaccess.MemoryUserDAO;
+import dataaccess.SQLGameDAO;
+import dataaccess.SQLUserDAO;
 import dataaccess.UserDAO;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenException;
@@ -30,10 +30,12 @@ public class GameServiceTests {
 
     @BeforeEach
     public void setup() {
-        gameDAO = new MemoryGameDAO();
-        userDAO = new MemoryUserDAO();
+        gameDAO = new SQLGameDAO();
+        userDAO = new SQLUserDAO();
         userService = new UserService(userDAO);
         gameService = new GameService(gameDAO, userService);
+        gameDAO.clearAllData();
+        userDAO.clearAllData();
     }
 
     // CREATE GAME TESTS

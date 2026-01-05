@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import dataaccess.MemoryUserDAO;
+import dataaccess.SQLUserDAO;
 import dataaccess.UserDAO;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenException;
@@ -21,8 +21,9 @@ public class UserServiceTests {
 
     @BeforeEach
     public void setup() {
-        userDAO = new MemoryUserDAO();
+        userDAO = new SQLUserDAO();
         userService = new UserService(userDAO);
+        userDAO.clearAllData();
     }
 
     // REGISTRATION TESTS
@@ -34,8 +35,11 @@ public class UserServiceTests {
         assertEquals("username", result.username());
         assertNotNull(result.authToken());
 
-        assertNotNull(userDAO.getUser("username"));
-        assertEquals(new UserData("username", "password", "email"), userDAO.getUser("username"));
+        UserData storedUser = userDAO.getUser("username");
+        assertNotNull(storedUser);
+        assertEquals("username", storedUser.username());
+        assertEquals("email", storedUser.email());
+        assertNotNull(storedUser.password());
         assertNotNull(userDAO.getAuthData(result.authToken()));
     }
 
