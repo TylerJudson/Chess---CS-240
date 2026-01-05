@@ -16,19 +16,19 @@ import model.UserData;
 
 public class SQLUserDAO implements UserDAO {
 
-    public SQLUserDAO() throws ServerErrorException {
+    public SQLUserDAO() {
         configureDatabase();
     }
 
     @Override
-    public void createUser(UserData user) throws ServerErrorException {
-        var statement = "INSERT INTO users (username, password, email, authToken) VALUES (?, ?, ?, ?)";
+    public void createUser(UserData user) {
+        String statement = "INSERT INTO users (username, password, email, authToken) VALUES (?, ?, ?, ?)";
         this.executeQuery(statement, user.username(), user.password(), user.email(), null);
     }
 
     @Override
     public UserData getUser(String username) {
-        var statement = "SELECT username, password, email, authToken FROM users WHERE username = ?";
+        String statement = "SELECT username, password, email, authToken FROM users WHERE username = ?";
         UserRow row = executeQuery(statement, username);
         if (row == null) {
             return null;
@@ -38,13 +38,13 @@ public class SQLUserDAO implements UserDAO {
 
     @Override
     public void createAuth(AuthData authData) {
-        var statement = "UPDATE users SET authToken = ? WHERE username = ?";
+        String statement = "UPDATE users SET authToken = ? WHERE username = ?";
         executeQuery(statement, authData.authToken(), authData.username());
     }
 
     @Override
     public AuthData getAuthData(String authToken) {
-        var statement = "SELECT username, password, email, authToken FROM users WHERE authToken = ?";
+        String statement = "SELECT username, password, email, authToken FROM users WHERE authToken = ?";
         UserRow row = executeQuery(statement, authToken);
         if (row == null) {
             return null;
@@ -54,7 +54,7 @@ public class SQLUserDAO implements UserDAO {
 
     @Override
     public void deleteAuthData(String authToken) {
-        var statement = "UPDATE users SET authToken = NULL WHERE authToken = ?";
+        String statement = "UPDATE users SET authToken = NULL WHERE authToken = ?";
         executeQuery(statement, authToken);
     }
 
@@ -63,7 +63,7 @@ public class SQLUserDAO implements UserDAO {
         executeQuery("DELETE FROM users");
     }
 
-    private UserRow executeQuery(String statement, Object... params) throws ServerErrorException {
+    private UserRow executeQuery(String statement, Object... params) {
         try (Connection conn = DatabaseManager.getConnection();
             PreparedStatement ps = conn.prepareStatement(statement)) {
                 for (int i = 0; i < params.length; i++) {

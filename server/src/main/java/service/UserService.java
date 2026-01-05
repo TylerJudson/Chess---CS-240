@@ -8,7 +8,6 @@ import dataaccess.SQLUserDAO;
 import dataaccess.UserDAO;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenException;
-import exceptions.ServerErrorException;
 import exceptions.UnauthorizedException;
 import model.AuthData;
 import model.UserData;
@@ -25,7 +24,7 @@ public class UserService {
         this.userDAO = dao;
     }
 
-    public RegisterResult register(RegisterRequest registerRequest) throws ServerErrorException {
+    public RegisterResult register(RegisterRequest registerRequest) {
         // Validate the properties of register request
         if (registerRequest.username() == null || registerRequest.username().isBlank() 
             || registerRequest.password() == null || registerRequest.password().isBlank() 
