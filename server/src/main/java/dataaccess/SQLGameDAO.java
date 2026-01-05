@@ -27,28 +27,28 @@ public class SQLGameDAO implements GameDAO {
 
     @Override
     public void createGame(GameData gameData) {
-        String statement = "INSERT INTO games (whiteUsername, blackUsername, gameName, game)"
-                        + "VALUES (?, ?, ?, ?)";
-        this.executeQuery(statement, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), gameData.game());
+        String statement = "INSERT INTO games (gameID, whiteUsername, blackUsername, gameName, game)"
+                        + "VALUES (?, ?, ?, ?, ?)";
+        this.executeQuery(statement, gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), gameData.game());
     }
 
     @Override
     public GameData getGame(int gameID) {
-        String statement = "SELECT id, whiteUsername, blackUsername, gameName, game"
-                        + " FROM users WHERE id = ?";
+        String statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game"
+                        + " FROM games WHERE gameID = ?";
         return this.executeQuery(statement, gameID);   
     }
 
     @Override
     public Collection<GameData> getAllGames() {
-        String statement = "SELECT id, whiteUsername, blackUsername, gameName, game FROM games";
+        String statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM games";
         ArrayList<GameData> games = new ArrayList<>();
 
         try (Connection conn = DatabaseManager.getConnection();
             PreparedStatement ps = conn.prepareStatement(statement);
             ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    games.add(new GameData(rs.getInt("id"), rs.getString("whiteUserName"), rs.getString("blackUserName"), 
+                    games.add(new GameData(rs.getInt("gameID"), rs.getString("whiteUserName"), rs.getString("blackUserName"), 
                             rs.getString("gameName"), deserializeGame(rs.getString("game"))));
                 }
         }
@@ -64,8 +64,10 @@ public class SQLGameDAO implements GameDAO {
 
     @Override
     public void updateGame(GameData gameData) {
-        String statement = "UPDATE games SET game = ? WHERE id = ?";
-        this.executeQuery(statement, gameData.game(), gameData.gameID());
+        String statement = "UPDATE games "
+                        + "SET whiteUsername = ?, blackUsername = ?, gameName = ?, game = ? "
+                        + "WHERE gameID = ?";
+        this.executeQuery(statement, gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), gameData.game(), gameData.gameID());
     }
 
     @Override
@@ -88,7 +90,7 @@ public class SQLGameDAO implements GameDAO {
                 if (statement.trim().toUpperCase().startsWith("SELECT")) {
                     ResultSet rs = ps.executeQuery();
                     if (rs.next()) {
-                        return new GameData(rs.getInt("id"), rs.getString("whiteUserName"), rs.getString("blackUserName"), 
+                        return new GameData(rs.getInt("gameID"), rs.getString("whiteUserName"), rs.getString("blackUserName"), 
                             rs.getString("gameName"), deserializeGame(rs.getString("game")));
                     }
                     return null;
@@ -117,12 +119,12 @@ public class SQLGameDAO implements GameDAO {
     private String[] createUserStatements = {
        """
         CREATE TABLE IF NOT EXISTS  games (
-            id INT NOT NULL AUTO_INCREMENT
-            `whiteUsername` TEXT
-            `blackUserName` TEXT
-            `gameName` TEXT NOT NULL
-            `game` TEXT
-            PRIMARY KEY (id),
+            `gameID` INT NOT NULL,
+            `whiteUsername` TEXT,
+            `blackUserName` TEXT,
+            `gameName` TEXT NOT NULL,
+            `game` TEXT,
+            PRIMARY KEY (`gameID`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
         """
     };
