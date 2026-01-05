@@ -29,7 +29,10 @@ public class SQLUserDAO implements UserDAO {
     @Override
     public UserData getUser(String username) {
         var statement = "SELECT username, password, email, authToken FROM users WHERE username = ?";
-        UserRow row = executeQuery(statement);
+        UserRow row = executeQuery(statement, username);
+        if (row == null) {
+            return null;
+        }
         return new UserData(row.username(), row.password(), row.email());
     }
 
@@ -68,18 +71,24 @@ public class SQLUserDAO implements UserDAO {
                     if (param instanceof String p) ps.setString(i + 1, p);
                     else if (param == null) ps.setNull(i + 1, NULL);
                 }
-                ps.executeUpdate();
 
-                ResultSet rs = ps.executeQuery();
-                if (rs.next()) {
-                    return new UserRow(rs.getString("username"), rs.getString("password"), rs.getString("email"), rs.getString("authToken"));
+                // Check if this is a SELECT statement
+                if (statement.trim().toUpperCase().startsWith("SELECT")) {
+                    ResultSet rs = ps.executeQuery();
+                    if (rs.next()) {
+                        return new UserRow(rs.getString("username"), rs.getString("password"), rs.getString("email"), rs.getString("authToken"));
+                    }
+                    return null;
+                } else {
+                    // For INSERT, UPDATE, DELETE
+                    ps.executeUpdate();
+                    return null;
                 }
-                return null;
         }
-        catch (DataAccessException | SQLIntegrityConstraintViolationException e) {
+        catch (SQLIntegrityConstraintViolationException e) {
             throw new ForbiddenException("already taken");
         }
-        catch (SQLException e) {
+        catch (DataAccessException | SQLException e) {
             throw new ServerErrorException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
         }
     }
@@ -87,9 +96,9 @@ public class SQLUserDAO implements UserDAO {
     private final String[] createUserStatements = {
        """
         CREATE TABLE IF NOT EXISTS  users (
-            `username` TEXT NOT NULL,
+            `username` VARCHAR(255) NOT NULL,
             `password` TEXT NOT NULL,
-            `email` TEXT NOT NULL,
+            `email` VARCHAR(255) NOT NULL,
             `authToken` VARCHAR(255),
             PRIMARY KEY (`username`),
             UNIQUE(`authToken`)
