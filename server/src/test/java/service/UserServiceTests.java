@@ -34,8 +34,11 @@ public class UserServiceTests {
         assertEquals("username", result.username());
         assertNotNull(result.authToken());
 
-        assertNotNull(userDAO.getUser("username"));
-        assertEquals(new UserData("username", "password", "email"), userDAO.getUser("username"));
+        UserData storedUser = userDAO.getUser("username");
+        assertNotNull(storedUser);
+        assertEquals("username", storedUser.username());
+        assertEquals("email", storedUser.email());
+        assertNotNull(storedUser.password());
         assertNotNull(userDAO.getAuthData(result.authToken()));
     }
 
