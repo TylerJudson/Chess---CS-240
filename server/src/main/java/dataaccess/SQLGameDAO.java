@@ -48,7 +48,7 @@ public class SQLGameDAO implements GameDAO {
             PreparedStatement ps = conn.prepareStatement(statement);
             ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    games.add(new GameData(rs.getInt("gameID"), rs.getString("whiteUserName"), rs.getString("blackUserName"), 
+                    games.add(new GameData(rs.getInt("gameID"), rs.getString("whiteUsername"), rs.getString("blackUsername"),
                             rs.getString("gameName"), deserializeGame(rs.getString("game"))));
                 }
         }
@@ -90,7 +90,7 @@ public class SQLGameDAO implements GameDAO {
                 if (statement.trim().toUpperCase().startsWith("SELECT")) {
                     ResultSet rs = ps.executeQuery();
                     if (rs.next()) {
-                        return new GameData(rs.getInt("gameID"), rs.getString("whiteUserName"), rs.getString("blackUserName"), 
+                        return new GameData(rs.getInt("gameID"), rs.getString("whiteUsername"), rs.getString("blackUsername"),
                             rs.getString("gameName"), deserializeGame(rs.getString("game")));
                     }
                     return null;
@@ -121,7 +121,7 @@ public class SQLGameDAO implements GameDAO {
         CREATE TABLE IF NOT EXISTS  games (
             `gameID` INT NOT NULL,
             `whiteUsername` TEXT,
-            `blackUserName` TEXT,
+            `blackUsername` TEXT,
             `gameName` TEXT NOT NULL,
             `game` TEXT,
             PRIMARY KEY (`gameID`)

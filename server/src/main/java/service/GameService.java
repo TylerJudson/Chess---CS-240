@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import chess.ChessGame;
 import dataaccess.GameDAO;
-import dataaccess.MemoryGameDAO;
+import dataaccess.SQLGameDAO;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenException;
 import exceptions.UnauthorizedException;
@@ -17,7 +17,7 @@ public class GameService {
     private int nextGameId;
     
     public GameService(UserService userService) {
-        this.gameDAO = new MemoryGameDAO();
+        this.gameDAO = new SQLGameDAO();
         this.userService = userService;
         this.nextGameId = 1;
     }
