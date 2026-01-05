@@ -26,7 +26,7 @@ public class Server {
 
     public Server() {
         this.userService = new UserService();
-        this.gameService = new GameService();
+        this.gameService = new GameService(userService);
         this.userHandler = new UserHandler(userService);
         this.gameHandler = new GameHandler(gameService);
 

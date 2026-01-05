@@ -86,6 +86,10 @@ public class UserService {
         this.userDAO.deleteAuthData(authData.authToken());
     }
 
+    public boolean isAuthorized(String authToken) {
+        return !(this.userDAO.getAuthData(authToken) == null);
+    }
+
     private AuthData getAuthData(String username) {
         return new AuthData(UUID.randomUUID().toString(), username);
     }

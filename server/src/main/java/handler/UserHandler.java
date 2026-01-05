@@ -20,19 +20,19 @@ public class UserHandler {
 
     public void handleRegistration(Context ctx) {
         RegisterRequest request = gson.fromJson(ctx.body(), RegisterRequest.class);
-        RegisterResult result = userService.register(request);
+        RegisterResult result = this.userService.register(request);
         ctx.status(200).result(gson.toJson(result));
     }
 
     public void handleLogin(Context ctx) {
         LoginRequest request = gson.fromJson(ctx.body(), LoginRequest.class);
-        LoginResult result = userService.login(request);
+        LoginResult result = this.userService.login(request);
         ctx.status(200).result(gson.toJson(result));
     }
 
     public void handleLogout(Context ctx) {
         LogoutRequest request = new LogoutRequest(ctx.header("authorization"));
-        userService.logout(request);
+        this.userService.logout(request);
         ctx.status(200);
     }
 }
