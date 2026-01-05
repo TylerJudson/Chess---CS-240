@@ -7,8 +7,10 @@ import com.google.gson.Gson;
 import exceptions.BadRequestException;
 import exceptions.ForbiddenException;
 import exceptions.UnauthorizedException;
+import handler.GameHandler;
 import handler.UserHandler;
 import io.javalin.*;
+import service.GameService;
 import service.UserService;
 
 public class Server {
@@ -18,11 +20,15 @@ public class Server {
 
     
     private UserService userService;
+    private GameService gameService;
     private UserHandler userHandler;
+    private GameHandler gameHandler;
 
     public Server() {
         this.userService = new UserService();
+        this.gameService = new GameService();
         this.userHandler = new UserHandler(userService);
+        this.gameHandler = new GameHandler(gameService);
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
 
@@ -31,6 +37,9 @@ public class Server {
         javalin.post("/session", userHandler::handleLogin);
         javalin.delete("/session", userHandler::handleLogout);
 
+        javalin.post("/game", gameHandler::handleCreateGame);
+        javalin.get("/game", gameHandler::handleListGames);
+        javalin.put("/game", gameHandler::handleJoinGames);
 
         // Register exceptions
         javalin.exception(BadRequestException.class, (e, ctx) -> {
