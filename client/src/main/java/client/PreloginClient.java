@@ -2,7 +2,9 @@ package client;
 
 import java.util.Scanner;
 
+import requests.LoginRequest;
 import requests.RegisterRequest;
+import results.LoginResult;
 import results.RegisterResult;
 import server.ServerFacade;
 
@@ -87,6 +89,22 @@ public class PreloginClient implements Client {
         PromptResult promptResult = promptUsernameAndPassword();
         if (promptResult == null) {
             return null;
+        }
+
+        try {
+            LoginResult result = this.serverFacade.login(new LoginRequest(promptResult.username(), promptResult.password()));
+
+            PrintUtilities.printSuccess("SUCCESS: your are now logged in.");
+
+            return new ClientResult(ClientType.POSTLOGIN, result.authToken());
+        }
+        catch (Exception ex) {
+            if (ex.getMessage().equals("Error: unauthorized")) {
+                PrintUtilities.printError("Error: username or password is invalid.");
+            }
+            else {
+                PrintUtilities.printError(ex.getMessage() + ".");
+            }
         }
 
         return null;

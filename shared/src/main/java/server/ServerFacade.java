@@ -8,7 +8,9 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 
+import requests.LoginRequest;
 import requests.RegisterRequest;
+import results.LoginResult;
 import results.RegisterResult;  
 
 import com.google.gson.Gson;
@@ -27,6 +29,12 @@ public class ServerFacade {
         var request = buildRequest("POST", "/user", registerRequest);
         var response = sendRequest(request);
         return handleResponse(response, RegisterResult.class);
+    }
+
+    public LoginResult login(LoginRequest loginRequest) throws ResponseException {
+        var request = buildRequest("POST", "/session", loginRequest);
+        var response = sendRequest(request);
+        return handleResponse(response, LoginResult.class);
     }
 
     private HttpRequest buildRequest(String method, String path, Object body) {
@@ -57,7 +65,6 @@ public class ServerFacade {
 
     private <T> T handleResponse(HttpResponse<String> response, Class<T> responseClass) throws ResponseException {
         var status = response.statusCode();
-        System.out.println("STATUS" + status);
         if (!isSuccessful(status)) {
             var body = response.body();
             if (body != null) {
