@@ -39,7 +39,7 @@ public class UserService {
 
         // Check to see if username already exists
         if (userDAO.getUser(registerRequest.username()) != null) {
-            throw new ForbiddenException("already taken");
+            throw new ForbiddenException("username already taken");
         }
 
         // Hash the password

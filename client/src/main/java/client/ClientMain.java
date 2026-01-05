@@ -2,14 +2,18 @@ package client;
 
 import java.util.Scanner;
 
+import server.ServerFacade;
+
 import static ui.EscapeSequences.*;
 
 public class ClientMain {
 
     static Client client;
+    static ServerFacade serverFacade;
 
     public static void main(String[] args) {
-        client = new PreloginClient();
+        serverFacade = new ServerFacade("http://localhost:8080");
+        client = new PreloginClient(serverFacade);
         run();
     }
 

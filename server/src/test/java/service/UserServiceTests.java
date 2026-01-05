@@ -80,7 +80,7 @@ public class UserServiceTests {
         RegisterRequest duplicateRequest = new RegisterRequest("username", "fd", "fd");
 
         ForbiddenException ex = assertThrows(ForbiddenException.class, () -> userService.register(duplicateRequest));
-        assertEquals("already taken", ex.getMessage());
+        assertEquals("username already taken", ex.getMessage());
     }
 
 
