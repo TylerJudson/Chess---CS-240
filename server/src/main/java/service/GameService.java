@@ -10,6 +10,11 @@ import exceptions.ForbiddenException;
 import exceptions.UnauthorizedException;
 import model.AuthData;
 import model.GameData;
+import requests.CreateGameRequest;
+import requests.JoinGameRequest;
+import requests.ListGamesRequest;
+import results.CreateGameResult;
+import results.ListGamesResult;
 
 public class GameService {
     private GameDAO gameDAO;

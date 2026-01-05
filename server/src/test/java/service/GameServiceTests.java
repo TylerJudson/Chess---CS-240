@@ -20,6 +20,13 @@ import exceptions.BadRequestException;
 import exceptions.ForbiddenException;
 import exceptions.UnauthorizedException;
 import model.GameData;
+import requests.CreateGameRequest;
+import requests.JoinGameRequest;
+import requests.ListGamesRequest;
+import requests.RegisterRequest;
+import results.CreateGameResult;
+import results.ListGamesResult;
+import results.RegisterResult;
 
 
 public class GameServiceTests {

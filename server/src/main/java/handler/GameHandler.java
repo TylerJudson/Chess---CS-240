@@ -5,12 +5,12 @@ import java.util.Map;
 import com.google.gson.Gson;
 
 import io.javalin.http.Context;
-import service.CreateGameRequest;
-import service.CreateGameResult;
+import requests.CreateGameRequest;
+import requests.JoinGameRequest;
+import requests.ListGamesRequest;
+import results.CreateGameResult;
+import results.ListGamesResult;
 import service.GameService;
-import service.JoinGameRequest;
-import service.ListGamesRequest;
-import service.ListGamesResult;
 
 public class GameHandler {
 

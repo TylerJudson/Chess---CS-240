@@ -14,6 +14,11 @@ import exceptions.BadRequestException;
 import exceptions.ForbiddenException;
 import exceptions.UnauthorizedException;
 import model.UserData;
+import requests.LoginRequest;
+import requests.LogoutRequest;
+import requests.RegisterRequest;
+import results.LoginResult;
+import results.RegisterResult;
 
 public class UserServiceTests {
     private UserDAO userDAO;

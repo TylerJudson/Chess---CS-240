@@ -11,6 +11,11 @@ import exceptions.ForbiddenException;
 import exceptions.UnauthorizedException;
 import model.AuthData;
 import model.UserData;
+import requests.LoginRequest;
+import requests.LogoutRequest;
+import requests.RegisterRequest;
+import results.LoginResult;
+import results.RegisterResult;
 
 public class UserService {
 

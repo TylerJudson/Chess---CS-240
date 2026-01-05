@@ -11,6 +11,10 @@ import dataaccess.MemoryGameDAO;
 import dataaccess.MemoryUserDAO;
 import dataaccess.UserDAO;
 import model.GameData;
+import requests.CreateGameRequest;
+import requests.RegisterRequest;
+import results.CreateGameResult;
+import results.RegisterResult;
 
 public class ApplicationServiceTests {
     private GameDAO gameDAO;
