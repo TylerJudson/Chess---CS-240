@@ -1,3 +1,5 @@
 package service;
 
-public record CreateGameResult(int gameId) {} 
+import model.GameData;
+
+public record CreateGameResult(GameData gameData) {} 

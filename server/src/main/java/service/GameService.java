@@ -34,20 +34,27 @@ public class GameService {
         }
 
         // Verify that the authoken is valid
-        if (!userService.isAuthorized(request.authToken())) {
+        if (!this.userService.isAuthorized(request.authToken())) {
             throw new UnauthorizedException("unauthorized");
         }
 
         // Create the game
-        GameData gameData = new GameData(nextGameId, null, null, request.gameName(), new ChessGame());
+        GameData gameData = new GameData(nextGameId, "", "", request.gameName(), new ChessGame());
         this.gameDAO.createGame(gameData);
         nextGameId++;
 
-        return new CreateGameResult(gameData.gameId());
+        return new CreateGameResult(gameData);
     }
 
     public ListGamesResult listGames(ListGamesRequest request) {
-        return null;
+        // Verify the authToken
+        if (!this.userService.isAuthorized(request.authToken())) {
+            throw new UnauthorizedException("unauthorized");
+        }
+
+        // Get the list of games
+        Collection<GameData> games = this.gameDAO.getAllGames();
+        return new ListGamesResult(games);
     }
 
     public void joinGame(JoinGameRequest request) {
