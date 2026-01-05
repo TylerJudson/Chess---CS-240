@@ -34,15 +34,17 @@ public class ClientMain {
         String line = scanner.nextLine();
         while (!line.equals("quit") && !line.equals("q")) {
             try {
-                ClientType newClient = client.eval(line.toLowerCase());
-                if (newClient == ClientType.PRELOGIN) {
-
-                }
-                else if (newClient == ClientType.POSTLOGIN) {
-
-                }
-                else if (newClient == ClientType.GAME) {
-
+                ClientResult newClient = client.eval(line.toLowerCase());
+                if (newClient != null) {
+                    if (newClient.newClient() == ClientType.PRELOGIN) {
+    
+                    }
+                    else if (newClient.newClient() == ClientType.POSTLOGIN) {
+    
+                    }
+                    else if (newClient.newClient() == ClientType.GAME) {
+    
+                    }
                 }
             } catch (Throwable e) {
                 var msg = e.toString();
