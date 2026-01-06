@@ -2,6 +2,9 @@ package client;
 
 import java.util.Scanner;
 
+import chess.ChessBoard;
+import chess.ChessGame;
+import chess.ChessGame.TeamColor;
 import server.ServerFacade;
 
 import static ui.EscapeSequences.*;
@@ -16,7 +19,8 @@ public class ClientMain {
     public static void main(String[] args) {
         serverFacade = new ServerFacade("http://localhost:8080");
         client = new PreloginClient(serverFacade);
-        run();
+        PrintUtilities.printChessBoard(TeamColor.BLACK, new ChessGame().getBoard());
+        // run();
     }
 
 
