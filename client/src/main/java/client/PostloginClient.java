@@ -48,7 +48,7 @@ public class PostloginClient implements Client {
 
             case "o":
             case "observe":
-                return observe();
+                return observe(authToken);
 
             case "logout":
                 return logout();
@@ -95,7 +95,7 @@ public class PostloginClient implements Client {
         try {
             ListGamesResult result = serverFacade.listGames(authToken);
             if (result.games().size() == 0) {
-                System.out.println("There are no available games.");
+                System.out.println("There are no available games.\n\n");
                 return null;
             }
             for (int i = 0; i < result.games().size(); i++) {
@@ -155,11 +155,41 @@ public class PostloginClient implements Client {
         catch (Exception ex) {
             PrintUtilities.printError(ex.getMessage() + ".");
         }
-        
+
         return null;
     }
 
-    private ClientResult observe() {
+    private ClientResult observe(String authToken) {
+        PrintUtilities.printSection("OBSERVE GAME");
+
+        System.out.print("Game Id: ");
+        String gameId = scanner.nextLine();
+        if (gameId.isBlank()) {
+            PrintUtilities.printError("Error: game id can't be blank.");
+            return null;
+        }
+
+        try {
+            int intGameId = Integer.parseInt(gameId);
+            ArrayList<GameData> games = serverFacade.listGames(authToken).games();
+            if (1 > intGameId || intGameId > games.size() + 1) {
+                PrintUtilities.printError("Error: invalid game id.");
+                return null;
+            }
+
+            GameData game = games.get(intGameId - 1);
+            
+            PrintUtilities.printSuccess("Success: you are now observing the game '%s'".formatted(game.gameName()));
+
+            return new ClientResult(ClientType.GAME, authToken, game.gameID());
+        }
+        catch (NumberFormatException ex) {
+            PrintUtilities.printError("Error: invalid game id.");
+        }
+        catch (Exception ex) {
+            PrintUtilities.printError(ex.getMessage() + ".");
+        }
+
         return null;
     }
 
