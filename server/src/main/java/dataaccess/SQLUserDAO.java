@@ -79,7 +79,7 @@ public class SQLUserDAO implements UserDAO {
                 }
         }
         catch (SQLIntegrityConstraintViolationException e) {
-            throw new ForbiddenException("already taken");
+            throw new ForbiddenException("username already taken");
         }
         catch (DataAccessException | SQLException e) {
             throw new ServerErrorException(String.format("unable to update database: %s, %s", statement, e.getMessage()));

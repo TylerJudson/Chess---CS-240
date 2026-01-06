@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
-import java.util.Collection;
 
 import com.google.gson.Gson;
 
@@ -40,7 +39,7 @@ public class SQLGameDAO implements GameDAO {
     }
 
     @Override
-    public Collection<GameData> getAllGames() {
+    public ArrayList<GameData> getAllGames() {
         String statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM games";
         ArrayList<GameData> games = new ArrayList<>();
 
@@ -53,7 +52,7 @@ public class SQLGameDAO implements GameDAO {
                 }
         }
         catch (SQLIntegrityConstraintViolationException e) {
-            throw new ForbiddenException("already taken");
+            throw new ForbiddenException("operation forbidden");
         }
         catch (DataAccessException | SQLException e) {
             throw new ServerErrorException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
@@ -101,7 +100,7 @@ public class SQLGameDAO implements GameDAO {
                 }
         }
         catch (SQLIntegrityConstraintViolationException e) {
-            throw new ForbiddenException("already taken");
+            throw new ForbiddenException("game name already taken");
         }
         catch (DataAccessException | SQLException e) {
             throw new ServerErrorException(String.format("unable to update database: %s, %s", statement, e.getMessage()));

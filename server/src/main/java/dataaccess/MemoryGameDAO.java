@@ -5,7 +5,6 @@ import java.util.Map;
 import model.GameData;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 
 public class MemoryGameDAO implements GameDAO {
@@ -23,7 +22,7 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     @Override
-    public Collection<GameData> getAllGames() {
+    public ArrayList<GameData> getAllGames() {
         return new ArrayList<>(this.games.values());
     }
 

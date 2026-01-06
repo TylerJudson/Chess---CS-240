@@ -1,6 +1,6 @@
 package service;
 
-import java.util.Collection;
+import java.util.ArrayList;
 
 import chess.ChessGame;
 import dataaccess.GameDAO;
@@ -10,6 +10,10 @@ import exceptions.ForbiddenException;
 import exceptions.UnauthorizedException;
 import model.AuthData;
 import model.GameData;
+import requests.CreateGameRequest;
+import requests.JoinGameRequest;
+import results.CreateGameResult;
+import results.ListGamesResult;
 
 public class GameService {
     private GameDAO gameDAO;
@@ -28,15 +32,15 @@ public class GameService {
         this.nextGameId = 1;
     }
 
-    public CreateGameResult createGame(CreateGameRequest request) {
+    public CreateGameResult createGame(CreateGameRequest request, String authToken) {
         // Validate the properties of create game request
         if (request.gameName() == null || request.gameName().isBlank()
-            || request.authToken() == null || request.authToken().isBlank()) {
+            || authToken == null || authToken.isBlank()) {
                 throw new BadRequestException("bad request");
         }
 
         // Verify that the authoken is valid
-        if (!this.userService.isAuthorized(request.authToken())) {
+        if (!this.userService.isAuthorized(authToken)) {
             throw new UnauthorizedException("unauthorized");
         }
 
@@ -45,30 +49,30 @@ public class GameService {
         this.gameDAO.createGame(gameData);
         nextGameId++;
 
-        return new CreateGameResult(gameData);
+        return new CreateGameResult(gameData.gameID());
     }
 
-    public ListGamesResult listGames(ListGamesRequest request) {
+    public ListGamesResult listGames(String authToken) {
         // Verify the authToken
-        if (!this.userService.isAuthorized(request.authToken())) {
+        if (!this.userService.isAuthorized(authToken)) {
             throw new UnauthorizedException("unauthorized");
         }
 
         // Get the list of games
-        Collection<GameData> games = this.gameDAO.getAllGames();
+        ArrayList<GameData> games = this.gameDAO.getAllGames();
         return new ListGamesResult(games);
     }
 
-    public void joinGame(JoinGameRequest request) {
+    public void joinGame(JoinGameRequest request, String authToken) {
         // Validate the properties of request
         if (request.playerColor() == null || !(request.playerColor().equals("WHITE") || request.playerColor().equals("BLACK"))
-            || request.authToken() == null || request.authToken().isBlank()
+            || authToken == null || authToken.isBlank()
         ) {
             throw new BadRequestException("bad request");
         }
 
         // Verify that the authoken is valid
-        AuthData authData = this.userService.getAuthData(request.authToken());
+        AuthData authData = this.userService.getAuthData(authToken);
         if (authData == null) {
             throw new UnauthorizedException("unathorized");
         }
@@ -83,7 +87,7 @@ public class GameService {
         if ((request.playerColor().equals("WHITE") && gameData.whiteUsername() != null && !gameData.whiteUsername().isBlank())
             || request.playerColor().equals("BLACK") && gameData.blackUsername() != null && !gameData.blackUsername().isBlank()
         ) {
-            throw new ForbiddenException("already taken");
+            throw new ForbiddenException("color already taken");
         }
 
         // Update the game

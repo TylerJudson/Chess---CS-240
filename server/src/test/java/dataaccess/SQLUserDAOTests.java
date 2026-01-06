@@ -44,7 +44,7 @@ public class SQLUserDAOTests {
 
         // Create duplicate user throws forbidden
         ForbiddenException ex = assertThrows(ForbiddenException.class, () -> userDAO.createUser(basicUser));
-        assertEquals("already taken", ex.getMessage());
+        assertEquals("username already taken", ex.getMessage());
     }
     
     // GET USER TESTS
@@ -94,7 +94,7 @@ public class SQLUserDAOTests {
         userDAO.createAuth(basicAuth);
 
         ForbiddenException ex = assertThrows(ForbiddenException.class, () -> userDAO.createAuth(basicAuth));
-        assertEquals("already taken", ex.getMessage());    
+        assertEquals("username already taken", ex.getMessage());    
     }
 
     // GET AUTH TESTS

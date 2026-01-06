@@ -14,6 +14,10 @@ import exceptions.BadRequestException;
 import exceptions.ForbiddenException;
 import exceptions.UnauthorizedException;
 import model.UserData;
+import requests.LoginRequest;
+import requests.RegisterRequest;
+import results.LoginResult;
+import results.RegisterResult;
 
 public class UserServiceTests {
     private UserDAO userDAO;
@@ -75,7 +79,7 @@ public class UserServiceTests {
         RegisterRequest duplicateRequest = new RegisterRequest("username", "fd", "fd");
 
         ForbiddenException ex = assertThrows(ForbiddenException.class, () -> userService.register(duplicateRequest));
-        assertEquals("already taken", ex.getMessage());
+        assertEquals("username already taken", ex.getMessage());
     }
 
 
@@ -142,38 +146,32 @@ public class UserServiceTests {
     public void logoutSuccess() {
         RegisterResult result = registerBasicUser();
 
-        LogoutRequest request = new LogoutRequest(result.authToken());
-        userService.logout(request);
+        String authToken = result.authToken();
+        userService.logout(authToken);
 
-        assertNull(userDAO.getAuthData(request.authtoken()));
+        assertNull(userDAO.getAuthData(authToken));
     }
 
     @Test
     public void logoutEmptyAuth() {
-        LogoutRequest request1 = new LogoutRequest("");
-        LogoutRequest request2 = new LogoutRequest(null);
-        LogoutRequest request3 = new LogoutRequest("     ");
-        LogoutRequest request4 = new LogoutRequest("\n");
-
-        BadRequestException ex1 = assertThrows(BadRequestException.class, () -> userService.logout(request1));
+        BadRequestException ex1 = assertThrows(BadRequestException.class, () -> userService.logout(""));
         assertEquals("bad request", ex1.getMessage());
 
-        BadRequestException ex2 = assertThrows(BadRequestException.class, () -> userService.logout(request2));
+        BadRequestException ex2 = assertThrows(BadRequestException.class, () -> userService.logout(null));
         assertEquals("bad request", ex2.getMessage());
 
-        BadRequestException ex3 = assertThrows(BadRequestException.class, () -> userService.logout(request3));
+        BadRequestException ex3 = assertThrows(BadRequestException.class, () -> userService.logout("     "));
         assertEquals("bad request", ex3.getMessage());
 
-        BadRequestException ex4 = assertThrows(BadRequestException.class, () -> userService.logout(request4));
-        assertEquals("bad request", ex4.getMessage());        
+        BadRequestException ex4 = assertThrows(BadRequestException.class, () -> userService.logout("\n"));
+        assertEquals("bad request", ex4.getMessage());
     }
 
     @Test
     public void logoutInvalidAuth() {
         registerBasicUser();
 
-        LogoutRequest request = new LogoutRequest("invalid");
-        UnauthorizedException ex = assertThrows(UnauthorizedException.class, () -> userService.logout(request));
+        UnauthorizedException ex = assertThrows(UnauthorizedException.class, () -> userService.logout("invalid"));
         assertEquals("unauthorized", ex.getMessage());
     }
 
