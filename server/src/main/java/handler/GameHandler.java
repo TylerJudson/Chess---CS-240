@@ -1,7 +1,5 @@
 package handler;
 
-import java.util.Map;
-
 import com.google.gson.Gson;
 
 import io.javalin.http.Context;
@@ -23,9 +21,9 @@ public class GameHandler {
 
     public void handleCreateGame(Context ctx) {
         CreateGameRequest bodyRequest = gson.fromJson(ctx.body(), CreateGameRequest.class);
-        CreateGameRequest request = new CreateGameRequest(bodyRequest.gameName(), ctx.header("authorization"));
-        CreateGameResult result = this.gameService.createGame(request);
-        ctx.status(200).result(gson.toJson(Map.of("gameID", result.gameData().gameID())));
+        CreateGameRequest request = new CreateGameRequest(bodyRequest.gameName());
+        CreateGameResult result = this.gameService.createGame(request, ctx.header("authorization"));
+        ctx.status(200).result(gson.toJson(result));
     }
 
     public void handleListGames(Context ctx) {

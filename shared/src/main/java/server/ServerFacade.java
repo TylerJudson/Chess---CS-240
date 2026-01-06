@@ -8,8 +8,10 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 
+import requests.CreateGameRequest;
 import requests.LoginRequest;
 import requests.RegisterRequest;
+import results.CreateGameResult;
 import results.LoginResult;
 import results.RegisterResult;  
 
@@ -37,14 +39,27 @@ public class ServerFacade {
         return handleResponse(response, LoginResult.class);
     }
 
+    public CreateGameResult createGame(CreateGameRequest gameRequest, String authToken) throws ResponseException {
+        var request = buildRequest("POST", "/game", gameRequest, authToken);
+        var response = sendRequest(request);
+        return handleResponse(response, CreateGameResult.class);
+    }
+
+    private HttpRequest buildRequest(String method, String path, Object body, String authToken) {
+      var request = HttpRequest.newBuilder()
+              .uri(URI.create(serverUrl + path))
+              .method(method, makeRequestBody(body));
+      if (body != null) {
+          request.setHeader("Content-Type", "application/json");
+      }
+      if (authToken != null) {
+          request.setHeader("authorization", authToken);
+      }
+      return request.build();
+    }
+
     private HttpRequest buildRequest(String method, String path, Object body) {
-        var request = HttpRequest.newBuilder()
-                .uri(URI.create(serverUrl + path))
-                .method(method, makeRequestBody(body));
-        if (body != null) {
-            request.setHeader("Content-Type", "application/json");
-        }
-        return request.build();
+        return buildRequest(method, path, body, null);
     }
 
     private BodyPublisher makeRequestBody(Object request) {

@@ -49,28 +49,30 @@ public class GameServiceTests {
     @Test
     public void createGameSuccess() {
         RegisterResult registerResult = registerBasicUser();
-        CreateGameRequest createGameRequest = new CreateGameRequest("gameName", registerResult.authToken());
-        CreateGameResult createGameResult = gameService.createGame(createGameRequest);
+        CreateGameRequest createGameRequest = new CreateGameRequest("gameName");
+        CreateGameResult createGameResult = gameService.createGame(createGameRequest, registerResult.authToken());
 
-        assertNotNull(createGameResult.gameData().gameID());
+        assertNotNull(createGameResult.gameID());
         
-        GameData createdGame = gameDAO.getGame(createGameResult.gameData().gameID());
+        GameData createdGame = gameDAO.getGame(createGameResult.gameID());
         assertNotNull(createdGame);
         assertEquals(createdGame.gameName(), "gameName");
     }
 
     @Test
     public void createGameEmptyFails() {
+        RegisterResult registerResult = registerBasicUser();
+
         List<CreateGameRequest> requests = List.of(
-            new CreateGameRequest("", ""),
-            new CreateGameRequest("f", ""),
-            new CreateGameRequest(null, "f"),
-            new CreateGameRequest("\n", "d"),
-            new CreateGameRequest("k", "   ")
+            new CreateGameRequest(""),
+            new CreateGameRequest("    "),
+            new CreateGameRequest(null),
+            new CreateGameRequest("\n"),
+            new CreateGameRequest("\t")
         );
 
         for (CreateGameRequest createGameRequest : requests) {
-            BadRequestException ex = assertThrows(BadRequestException.class, () -> gameService.createGame(createGameRequest));
+            BadRequestException ex = assertThrows(BadRequestException.class, () -> gameService.createGame(createGameRequest, registerResult.authToken()));
             assertEquals("bad request", ex.getMessage());
         }
     }
@@ -78,8 +80,8 @@ public class GameServiceTests {
     @Test
     public void createGameInvalidAuthFails() {
         registerBasicUser();
-        CreateGameRequest request = new CreateGameRequest("gameName", "invalid");
-        UnauthorizedException ex = assertThrows(UnauthorizedException.class, () -> gameService.createGame(request));
+        CreateGameRequest request = new CreateGameRequest("gameName");
+        UnauthorizedException ex = assertThrows(UnauthorizedException.class, () -> gameService.createGame(request, "invalid"));
         assertEquals("unauthorized", ex.getMessage());
     }
 
@@ -97,8 +99,8 @@ public class GameServiceTests {
         
         Collection<GameData> games2 = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
-            CreateGameResult gameResult = gameService.createGame(new CreateGameRequest("Game" + i, registerResult.authToken()));
-            games2.add(gameResult.gameData());
+            CreateGameResult gameResult = gameService.createGame(new CreateGameRequest("Game" + i), registerResult.authToken());
+            games2.add(gameDAO.getGame(gameResult.gameID()));
         }
 
         ListGamesRequest request2 = new ListGamesRequest(registerResult.authToken());
@@ -120,47 +122,47 @@ public class GameServiceTests {
     @Test
     public void joinGameSucess() {
         RegisterResult register1Result = registerBasicUser();
-        CreateGameRequest createGameRequest = new CreateGameRequest("gameName", register1Result.authToken());
-        CreateGameResult createGameResult = gameService.createGame(createGameRequest);
+        CreateGameRequest createGameRequest = new CreateGameRequest("gameName");
+        CreateGameResult createGameResult = gameService.createGame(createGameRequest, register1Result.authToken());
 
         // Check joining as white works
-        JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE", createGameResult.gameData().gameID(), register1Result.authToken());
+        JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE", createGameResult.gameID(), register1Result.authToken());
         gameService.joinGame(joinGameRequest);
-        assertEquals(gameDAO.getGame(createGameResult.gameData().gameID()).whiteUsername(), "username");
+        assertEquals(gameDAO.getGame(createGameResult.gameID()).whiteUsername(), "username");
 
         // Check joining as black works
         RegisterResult register2Result = registerBasicUser("username2");
-        JoinGameRequest joinGameRequest2 = new JoinGameRequest("BLACK", createGameResult.gameData().gameID(), register2Result.authToken());
+        JoinGameRequest joinGameRequest2 = new JoinGameRequest("BLACK", createGameResult.gameID(), register2Result.authToken());
         gameService.joinGame(joinGameRequest2);
-        assertEquals(gameDAO.getGame(createGameResult.gameData().gameID()).blackUsername(), "username2");
+        assertEquals(gameDAO.getGame(createGameResult.gameID()).blackUsername(), "username2");
     }
 
     @Test
     public void joinGameAlreadyTakenWHITEFails() {
         RegisterResult register1Result = registerBasicUser();
-        CreateGameRequest createGameRequest = new CreateGameRequest("gameName", register1Result.authToken());
-        CreateGameResult createGameResult = gameService.createGame(createGameRequest);
-        JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE", createGameResult.gameData().gameID(), register1Result.authToken());
+        CreateGameRequest createGameRequest = new CreateGameRequest("gameName");
+        CreateGameResult createGameResult = gameService.createGame(createGameRequest, register1Result.authToken());
+        JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE", createGameResult.gameID(), register1Result.authToken());
         gameService.joinGame(joinGameRequest);
 
         RegisterResult register2Result = registerBasicUser("username2");
-        JoinGameRequest joinGameRequest2 = new JoinGameRequest("WHITE", createGameResult.gameData().gameID(), register2Result.authToken());
+        JoinGameRequest joinGameRequest2 = new JoinGameRequest("WHITE", createGameResult.gameID(), register2Result.authToken());
         ForbiddenException ex = assertThrows(ForbiddenException.class, () -> gameService.joinGame(joinGameRequest2));
-        assertEquals(ex.getMessage(), "already taken");
+        assertEquals(ex.getMessage(), "color already taken");
     }
 
     @Test
     public void joinGameAlreadyTakenBLACKFails() {
         RegisterResult register1Result = registerBasicUser();
-        CreateGameRequest createGameRequest = new CreateGameRequest("gameName", register1Result.authToken());
-        CreateGameResult createGameResult = gameService.createGame(createGameRequest);
-        JoinGameRequest joinGameRequest = new JoinGameRequest("BLACK", createGameResult.gameData().gameID(), register1Result.authToken());
+        CreateGameRequest createGameRequest = new CreateGameRequest("gameName");
+        CreateGameResult createGameResult = gameService.createGame(createGameRequest, register1Result.authToken());
+        JoinGameRequest joinGameRequest = new JoinGameRequest("BLACK", createGameResult.gameID(), register1Result.authToken());
         gameService.joinGame(joinGameRequest);
 
         RegisterResult register2Result = registerBasicUser("username2");
-        JoinGameRequest joinGameRequest2 = new JoinGameRequest("BLACK", createGameResult.gameData().gameID(), register2Result.authToken());
+        JoinGameRequest joinGameRequest2 = new JoinGameRequest("BLACK", createGameResult.gameID(), register2Result.authToken());
         ForbiddenException ex = assertThrows(ForbiddenException.class, () -> gameService.joinGame(joinGameRequest2));
-        assertEquals(ex.getMessage(), "already taken");
+        assertEquals(ex.getMessage(), "color already taken");
     }
 
     private RegisterResult registerBasicUser() {

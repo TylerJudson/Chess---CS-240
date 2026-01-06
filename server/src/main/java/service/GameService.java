@@ -33,15 +33,15 @@ public class GameService {
         this.nextGameId = 1;
     }
 
-    public CreateGameResult createGame(CreateGameRequest request) {
+    public CreateGameResult createGame(CreateGameRequest request, String authToken) {
         // Validate the properties of create game request
         if (request.gameName() == null || request.gameName().isBlank()
-            || request.authToken() == null || request.authToken().isBlank()) {
+            || authToken == null || authToken.isBlank()) {
                 throw new BadRequestException("bad request");
         }
 
         // Verify that the authoken is valid
-        if (!this.userService.isAuthorized(request.authToken())) {
+        if (!this.userService.isAuthorized(authToken)) {
             throw new UnauthorizedException("unauthorized");
         }
 
@@ -50,7 +50,7 @@ public class GameService {
         this.gameDAO.createGame(gameData);
         nextGameId++;
 
-        return new CreateGameResult(gameData);
+        return new CreateGameResult(gameData.gameID());
     }
 
     public ListGamesResult listGames(ListGamesRequest request) {
@@ -88,7 +88,7 @@ public class GameService {
         if ((request.playerColor().equals("WHITE") && gameData.whiteUsername() != null && !gameData.whiteUsername().isBlank())
             || request.playerColor().equals("BLACK") && gameData.blackUsername() != null && !gameData.blackUsername().isBlank()
         ) {
-            throw new ForbiddenException("already taken");
+            throw new ForbiddenException("color already taken");
         }
 
         // Update the game

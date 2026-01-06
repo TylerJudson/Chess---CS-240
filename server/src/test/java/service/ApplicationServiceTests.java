@@ -39,11 +39,11 @@ public class ApplicationServiceTests {
         // Make sure user exists before clearing
         assertNotNull(userDAO.getUser("username"));
 
-        CreateGameRequest createGameRequest = new CreateGameRequest("gameName", registerResult.authToken());
-        CreateGameResult createGameResult = gameService.createGame(createGameRequest);
+        CreateGameRequest createGameRequest = new CreateGameRequest("gameName");
+        CreateGameResult createGameResult = gameService.createGame(createGameRequest, registerResult.authToken());
 
         // Make sure game exists before clearing
-        GameData createdGame = gameDAO.getGame(createGameResult.gameData().gameID());
+        GameData createdGame = gameDAO.getGame(createGameResult.gameID());
         assertNotNull(createdGame);
 
         // Clear all data
@@ -51,7 +51,7 @@ public class ApplicationServiceTests {
 
         // Make sure all the data is cleared
         assertNull(userDAO.getUser("username"));
-        assertNull(gameDAO.getGame(createGameResult.gameData().gameID()));
+        assertNull(gameDAO.getGame(createGameResult.gameID()));
     }
 
 

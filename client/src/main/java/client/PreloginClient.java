@@ -28,7 +28,7 @@ public class PreloginClient implements Client {
     }
 
     @Override
-    public ClientResult eval(String str) {
+    public ClientResult eval(String str, String authToken, int GameID) {
         switch (str) {
             case "r":
             case "register":
@@ -51,7 +51,6 @@ public class PreloginClient implements Client {
 
         return null;
     }
-
 
     private ClientResult register() {
         PrintUtilities.printSection("REGISTER");

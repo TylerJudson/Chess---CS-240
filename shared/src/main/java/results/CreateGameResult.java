@@ -1,5 +1,3 @@
 package results;
 
-import model.GameData;
-
-public record CreateGameResult(GameData gameData) {} 
+public record CreateGameResult(int gameID) {} 

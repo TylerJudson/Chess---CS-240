@@ -53,7 +53,7 @@ public class SQLGameDAO implements GameDAO {
                 }
         }
         catch (SQLIntegrityConstraintViolationException e) {
-            throw new ForbiddenException("already taken");
+            throw new ForbiddenException("operation forbidden");
         }
         catch (DataAccessException | SQLException e) {
             throw new ServerErrorException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
@@ -101,7 +101,7 @@ public class SQLGameDAO implements GameDAO {
                 }
         }
         catch (SQLIntegrityConstraintViolationException e) {
-            throw new ForbiddenException("already taken");
+            throw new ForbiddenException("game name already taken");
         }
         catch (DataAccessException | SQLException e) {
             throw new ServerErrorException(String.format("unable to update database: %s, %s", statement, e.getMessage()));

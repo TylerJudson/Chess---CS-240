@@ -1,6 +1,18 @@
 package client;
 
+import java.util.Scanner;
+
+import requests.CreateGameRequest;
+import results.CreateGameResult;
+import server.ServerFacade;
+
 public class PostloginClient implements Client {
+    Scanner scanner = new Scanner(System.in);
+    ServerFacade serverFacade;
+
+    public PostloginClient(ServerFacade serverFacade) {
+        this.serverFacade = serverFacade;
+    }
 
     @Override
     public void help() {
@@ -17,11 +29,11 @@ public class PostloginClient implements Client {
     }
 
     @Override
-    public ClientResult eval(String str) {
+    public ClientResult eval(String str, String authToken, int GameID) {
         switch (str) {
             case "c":
             case "create":
-                return create();
+                return create(authToken);
             
             case "l":
             case "list":
@@ -53,8 +65,25 @@ public class PostloginClient implements Client {
     }
 
 
+    private ClientResult create(String authToken) {
+        PrintUtilities.printSection("CREATE GAME");
 
-    private ClientResult create() {
+        System.out.print("Game Name: ");
+        String gameName = scanner.nextLine();
+        if (gameName.isBlank()) {
+            PrintUtilities.printError("Error: Game Name can't be blank.");
+            return null;
+        }
+
+        try {
+            CreateGameResult result = this.serverFacade.createGame(new CreateGameRequest(gameName), authToken);
+
+            PrintUtilities.printSuccess("SUCCESS: " + gameName + " was created.");
+        }
+        catch (Exception ex) {
+            PrintUtilities.printError(ex.getMessage() + ".");
+        }
+
         return null;
     }
 

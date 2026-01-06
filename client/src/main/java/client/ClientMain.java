@@ -8,8 +8,10 @@ import static ui.EscapeSequences.*;
 
 public class ClientMain {
 
-    static Client client;
-    static ServerFacade serverFacade;
+    private static Client client;
+    private static ServerFacade serverFacade;
+    private static String currentAuth;
+    private static int currentGameID;
 
     public static void main(String[] args) {
         serverFacade = new ServerFacade("http://localhost:8080");
@@ -38,16 +40,21 @@ public class ClientMain {
         String line = scanner.nextLine();
         while (!line.equals("quit") && !line.equals("q")) {
             try {
-                ClientResult newClient = client.eval(line.toLowerCase());
-                if (newClient != null) {
-                    if (newClient.newClient() == ClientType.PRELOGIN) {
-    
+                ClientResult clientResult = client.eval(line.toLowerCase(), currentAuth, currentGameID);
+                if (clientResult != null) {
+                    currentAuth = clientResult.authToken() == null ? currentAuth : clientResult.authToken();
+                    currentGameID = clientResult.GameID() > 0 ? currentGameID : clientResult.GameID();
+
+                    if (clientResult.newClient() == ClientType.PRELOGIN) {
+                        client = new PreloginClient(serverFacade);
+                        client.help();
                     }
-                    else if (newClient.newClient() == ClientType.POSTLOGIN) {
-    
+                    else if (clientResult.newClient() == ClientType.POSTLOGIN) {
+                        client = new PostloginClient(serverFacade);
+                        client.help();
                     }
-                    else if (newClient.newClient() == ClientType.GAME) {
-    
+                    else if (clientResult.newClient() == ClientType.GAME) {
+                        
                     }
                 }
             } catch (Throwable e) {

@@ -52,7 +52,7 @@ public class SQLGameDAOTests {
 
         // Create duplicate game throws forbidden
         ForbiddenException ex = assertThrows(ForbiddenException.class, () -> gameDAO.createGame(basicGameData));
-        assertEquals("already taken", ex.getMessage());
+        assertEquals("game name already taken", ex.getMessage());
     }
 
     // GET GAME TESTS
