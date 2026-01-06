@@ -147,7 +147,7 @@ public class PostloginClient implements Client {
             
             PrintUtilities.printSuccess("Success: you have joined the game '%s'".formatted(game.gameName()));
 
-            return new ClientResult(ClientType.GAME, authToken, game.gameID());
+            return new ClientResult(ClientType.GAME, authToken, game.gameID(), null);
         }
         catch (NumberFormatException ex) {
             PrintUtilities.printError("Error: invalid game id.");
@@ -181,7 +181,7 @@ public class PostloginClient implements Client {
             
             PrintUtilities.printSuccess("Success: you are now observing the game '%s'".formatted(game.gameName()));
 
-            return new ClientResult(ClientType.GAME, authToken, game.gameID());
+            return new ClientResult(ClientType.GAME, authToken, game.gameID(), null);
         }
         catch (NumberFormatException ex) {
             PrintUtilities.printError("Error: invalid game id.");
@@ -200,7 +200,7 @@ public class PostloginClient implements Client {
         catch (Exception ex) {}
         
         PrintUtilities.printSuccess("Success: you have been logged out");
-        return new ClientResult(ClientType.PRELOGIN, null, -1);
+        return new ClientResult(ClientType.PRELOGIN, null, -1, null);
     }
     
 }

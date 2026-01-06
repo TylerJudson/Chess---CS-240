@@ -2,9 +2,6 @@ package client;
 
 import java.util.Scanner;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessGame.TeamColor;
 import server.ServerFacade;
 
 import static ui.EscapeSequences.*;
@@ -15,12 +12,12 @@ public class ClientMain {
     private static ServerFacade serverFacade;
     private static String currentAuth;
     private static int currentGameID;
+    private static String currentUsername;
 
     public static void main(String[] args) {
         serverFacade = new ServerFacade("http://localhost:8080");
         client = new PreloginClient(serverFacade);
-        PrintUtilities.printChessBoard(TeamColor.BLACK, new ChessGame().getBoard());
-        // run();
+        run();
     }
 
 
@@ -47,18 +44,24 @@ public class ClientMain {
                 ClientResult clientResult = client.eval(line.toLowerCase(), currentAuth, currentGameID);
                 if (clientResult != null) {
                     currentAuth = clientResult.authToken() == null ? currentAuth : clientResult.authToken();
-                    currentGameID = clientResult.GameID() > 0 ? currentGameID : clientResult.GameID();
+                    currentGameID = clientResult.gameID() < 1 ? currentGameID : clientResult.gameID();
+                    currentUsername = clientResult.username() == null ? currentUsername : clientResult.username();
 
                     if (clientResult.newClient() == ClientType.PRELOGIN) {
+                        currentAuth = null;
+                        currentGameID = -1;
+                        currentUsername = null;
                         client = new PreloginClient(serverFacade);
                         client.help();
                     }
                     else if (clientResult.newClient() == ClientType.POSTLOGIN) {
+                        currentGameID = -1;
                         client = new PostloginClient(serverFacade);
                         client.help();
                     }
                     else if (clientResult.newClient() == ClientType.GAME) {
-                        
+                        client = new GameClient(serverFacade, currentAuth, currentGameID, currentUsername);
+                        client.help();
                     }
                 }
             } catch (Throwable e) {
