@@ -30,7 +30,7 @@ public class GameClient implements Client, ServerMessageObserver {
         
         try {
             this.webSocketFacade = new WebSocketFacade(serverUrl, this);
-            this.webSocketFacade.connectGame(new UserGameCommand(CommandType.CONNECT, authToken, gameId));
+            this.webSocketFacade.performCommand(new UserGameCommand(CommandType.CONNECT, authToken, gameId));
         } catch (ResponseException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -61,6 +61,7 @@ public class GameClient implements Client, ServerMessageObserver {
     public void help() {
         System.out.println("""
                 Available Commands:
+                - Move: "m" "move"            | Moves a piece.
                 - Exit: "e" "exit"            | Exit the game.
                 - Quit: "q" "quit"            | Quit the application.
                 - Help: "h" "help"            | List available commands.
@@ -70,6 +71,9 @@ public class GameClient implements Client, ServerMessageObserver {
     @Override
     public ClientResult eval(String str, String authToken, int gameId) {
         switch (str) {
+            case "m":
+            case "move":
+                return move();
             case "e":
             case "exit":
                 return exit();
@@ -85,6 +89,17 @@ public class GameClient implements Client, ServerMessageObserver {
                 break;
         }
 
+        return null;
+    }
+
+    private ClientResult move() {
+        try {
+            webSocketFacade.performCommand(new UserGameCommand(CommandType.LEAVE, null, null));
+        } catch (ResponseException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
         return null;
     }
 

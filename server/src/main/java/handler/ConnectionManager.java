@@ -21,7 +21,7 @@ public class ConnectionManager {
     }
 
     public void broadcast(Session excludeSession, ServerMessage serverMessage) throws IOException {
-        String msg = new Gson().toJson(serverMessage.toString());
+        String msg = new Gson().toJson(serverMessage);
         for (Session c : connections.values()) {
             if (c.isOpen()) {
                 if (!c.equals(excludeSession)) {

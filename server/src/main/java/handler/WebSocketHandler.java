@@ -15,6 +15,8 @@ import io.javalin.websocket.WsMessageContext;
 import io.javalin.websocket.WsMessageHandler;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ServerMessage;
+import websocket.messages.ServerMessage.ServerMessageType;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
     Gson gson = new Gson();
@@ -48,10 +50,13 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void connect(UserGameCommand gameCommand, Session session) throws IOException {
-        System.out.println("CONNECTED");
+        connections.add(session);
+        String message = "%s joined the game".formatted(gameCommand.getAuthToken());
+        ServerMessage serverMessage = new ServerMessage(ServerMessageType.NOTIFICATION, message);
+        connections.broadcast(session, serverMessage);
     }
-    private void leave(UserGameCommand gameCommand, Session session) {
-        
+    private void leave(UserGameCommand gameCommand, Session session) throws IOException {
+        connections.broadcast(session, new ServerMessage(ServerMessageType.NOTIFICATION, "TESTING"));
     }
     private void resign(UserGameCommand gameCommand, Session session) {
         
