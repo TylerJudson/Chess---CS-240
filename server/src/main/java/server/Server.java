@@ -37,7 +37,7 @@ public class Server {
         this.userHandler = new UserHandler(userService);
         this.gameHandler = new GameHandler(gameService);
         this.applicationHandler = new ApplicationHandler(applicationService);
-        this.webSocketHandler = new WebSocketHandler();
+        this.webSocketHandler = new WebSocketHandler(userService, gameService);
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
 

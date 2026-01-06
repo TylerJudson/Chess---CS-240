@@ -13,15 +13,26 @@ import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsConnectHandler;
 import io.javalin.websocket.WsMessageContext;
 import io.javalin.websocket.WsMessageHandler;
+import model.AuthData;
+import service.GameService;
+import service.UserService;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 import websocket.messages.ServerMessage.ServerMessageType;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
+    UserService userService;
+    GameService gameService;
+    
     Gson gson = new Gson();
 
     private final ConnectionManager connections = new ConnectionManager();
+
+    public WebSocketHandler(UserService userService, GameService gameService) {
+        this.userService = userService;
+        this.gameService = gameService;
+    }
 
     @Override
     public void handleConnect(WsConnectContext ctx) {
@@ -51,17 +62,31 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private void connect(UserGameCommand gameCommand, Session session) throws IOException {
         connections.add(session);
-        String message = "%s joined the game".formatted(gameCommand.getAuthToken());
+        String message = "%s joined the game.".formatted(getUserName(gameCommand.getAuthToken()));
         ServerMessage serverMessage = new ServerMessage(ServerMessageType.NOTIFICATION, message);
         connections.broadcast(session, serverMessage);
     }
     private void leave(UserGameCommand gameCommand, Session session) throws IOException {
-        connections.broadcast(session, new ServerMessage(ServerMessageType.NOTIFICATION, "TESTING"));
+        String message = "%s has left the game.".formatted(getUserName(gameCommand.getAuthToken()));
+        ServerMessage serverMessage = new ServerMessage(ServerMessageType.NOTIFICATION, message);
+        connections.broadcast(session, serverMessage);
+        connections.remove(session);
     }
-    private void resign(UserGameCommand gameCommand, Session session) {
-        
+    private void resign(UserGameCommand gameCommand, Session session) throws IOException {
+        String message = "%s has resigned the game.".formatted(getUserName(gameCommand.getAuthToken()));
+        ServerMessage serverMessage = new ServerMessage(ServerMessageType.NOTIFICATION, message);
+        connections.broadcast(session, serverMessage);
+        connections.remove(session);
     }
     private void makeMove(MakeMoveCommand moveCommand, Session session) {
+        
+    }
 
+    private String getUserName(String authToken) {
+        AuthData authData = this.userService.getAuthData(authToken);
+        if (authData != null) {
+            return authData.username();
+        }
+        return null;
     }
 }

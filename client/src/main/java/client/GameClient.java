@@ -1,5 +1,9 @@
 package client;
 
+import static ui.EscapeSequences.RESET_TEXT_COLOR;
+import static ui.EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY;
+import static ui.EscapeSequences.moveCursorToLocation;
+
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -13,7 +17,9 @@ import server.ServerMessageObserver;
 import server.WebSocketFacade;
 import websocket.commands.UserGameCommand;
 import websocket.commands.UserGameCommand.CommandType;
+import websocket.messages.LoadGameMessage;
 import websocket.messages.ServerMessage;
+import websocket.messages.ServerMessage.ServerMessageType;
 
 public class GameClient implements Client, ServerMessageObserver {
 
@@ -35,6 +41,7 @@ public class GameClient implements Client, ServerMessageObserver {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+
         GameData gameData = getGameData(gameId, authToken);
         if (gameData != null) {
             this.game = gameData.game();
@@ -48,14 +55,31 @@ public class GameClient implements Client, ServerMessageObserver {
                 this.isObserving = true;
             }
         }
-
-        printGameBoard(null);
     }
 
     @Override
     public void notify(ServerMessage serverMessage) {
-        System.out.println("NOTIFIYING: " + serverMessage.getMessage());
+        if (serverMessage != null) {
+
+            System.out.print(moveCursorToLocation(0, -1));
+
+            if (serverMessage.getServerMessageType() == ServerMessageType.NOTIFICATION) {
+                System.out.println(SET_TEXT_COLOR_LIGHT_GREY + serverMessage.getMessage() + RESET_TEXT_COLOR);
+            }
+            else if (serverMessage.getServerMessageType() == ServerMessageType.ERROR) {
+                PrintUtilities.printError(serverMessage.getMessage());
+            }
+            else if (serverMessage.getServerMessageType() == ServerMessageType.LOAD_GAME) {
+                if (serverMessage instanceof LoadGameMessage) {
+                    this.game = ((LoadGameMessage)serverMessage).getGameData().game();
+                    printGameBoard(null);
+                }
+            }
+
+            moveCursorToLocation(0, 0);
+        }
     }
+
 
     @Override
     public void help() {
@@ -76,7 +100,7 @@ public class GameClient implements Client, ServerMessageObserver {
                 return move();
             case "e":
             case "exit":
-                return exit();
+                return exit(authToken, gameId);
 
             case "h":
             case "help":
@@ -103,9 +127,18 @@ public class GameClient implements Client, ServerMessageObserver {
         return null;
     }
 
-    private ClientResult exit() {
-        PrintUtilities.printSuccess("Success: you have exited the game.");
-        return new ClientResult(ClientType.POSTLOGIN, null, -1, null);
+    private ClientResult exit(String authToken, int gameId) {
+        try {
+            UserGameCommand gameCommand = new UserGameCommand(CommandType.LEAVE, authToken, gameId);
+            this.webSocketFacade.performCommand(gameCommand);
+            PrintUtilities.printSuccess("Success: you have exited the game.");
+            return new ClientResult(ClientType.POSTLOGIN, null, -1, null);
+        }
+        catch (Exception ex) {
+            PrintUtilities.printError(ex.getMessage() + ".");
+        }
+
+        return null;
     }
 
     public ClientResult printGameBoard(ChessPosition selectedPosition) {
