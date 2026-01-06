@@ -13,9 +13,10 @@ public class ClientMain {
     private static String currentAuth;
     private static int currentGameID;
     private static String currentUsername;
+    private static String serverUrl = "http://localhost:8080";
 
     public static void main(String[] args) {
-        serverFacade = new ServerFacade("http://localhost:8080");
+        serverFacade = new ServerFacade(serverUrl);
         client = new PreloginClient(serverFacade);
         run();
     }
@@ -60,7 +61,7 @@ public class ClientMain {
                         client.help();
                     }
                     else if (clientResult.newClient() == ClientType.GAME) {
-                        client = new GameClient(serverFacade, currentAuth, currentGameID, currentUsername);
+                        client = new GameClient(serverFacade, serverUrl, currentAuth, currentGameID, currentUsername);
                         client.help();
                     }
                 }

@@ -5,22 +5,36 @@ import java.util.Scanner;
 
 import chess.ChessGame;
 import chess.ChessPosition;
+import exceptions.ResponseException;
 import chess.ChessGame.TeamColor;
 import model.GameData;
 import server.ServerFacade;
+import server.ServerMessageObserver;
+import server.WebSocketFacade;
+import websocket.commands.UserGameCommand;
+import websocket.commands.UserGameCommand.CommandType;
+import websocket.messages.ServerMessage;
 
-public class GameClient implements Client {
+public class GameClient implements Client, ServerMessageObserver {
 
     Scanner scanner = new Scanner(System.in);
     ChessGame game = new ChessGame();
     ServerFacade serverFacade;
+    WebSocketFacade webSocketFacade;
 
     TeamColor clientColor = TeamColor.WHITE;
     boolean isObserving = false;
 
-    public GameClient(ServerFacade serverFacade, String authToken, int gameId, String username) {
+    public GameClient(ServerFacade serverFacade, String serverUrl, String authToken, int gameId, String username) {
         this.serverFacade = serverFacade;
-        System.out.println("GAMEDID: " + gameId);
+        
+        try {
+            this.webSocketFacade = new WebSocketFacade(serverUrl, this);
+            this.webSocketFacade.connectGame(new UserGameCommand(CommandType.CONNECT, authToken, gameId));
+        } catch (ResponseException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         GameData gameData = getGameData(gameId, authToken);
         if (gameData != null) {
             this.game = gameData.game();
@@ -36,6 +50,11 @@ public class GameClient implements Client {
         }
 
         printGameBoard(null);
+    }
+
+    @Override
+    public void notify(ServerMessage serverMessage) {
+        System.out.println("NOTIFIYING: " + serverMessage.getMessage());
     }
 
     @Override

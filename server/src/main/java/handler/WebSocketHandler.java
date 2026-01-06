@@ -48,7 +48,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void connect(UserGameCommand gameCommand, Session session) throws IOException {
-
+        System.out.println("CONNECTED");
     }
     private void leave(UserGameCommand gameCommand, Session session) {
         
