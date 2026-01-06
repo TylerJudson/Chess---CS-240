@@ -51,7 +51,7 @@ public class PostloginClient implements Client {
                 return observe(authToken);
 
             case "logout":
-                return logout();
+                return logout(authToken);
             
             case "h":
             case "help":
@@ -193,8 +193,14 @@ public class PostloginClient implements Client {
         return null;
     }
 
-    private ClientResult logout() {
-        return null;
+    private ClientResult logout(String authToken) {
+        try {
+            serverFacade.logout(authToken);
+        }
+        catch (Exception ex) {}
+        
+        PrintUtilities.printSuccess("Success: you have been logged out");
+        return new ClientResult(ClientType.PRELOGIN, null, -1);
     }
     
 }
