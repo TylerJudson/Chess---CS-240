@@ -62,6 +62,14 @@ public class ChessGame {
     }
 
     /**
+     * Get the last move made
+     * @return previous move
+     */
+    public ChessMove getPreviousMove() {
+        return this.previousMove;
+    }
+
+    /**
      * Enum identifying the 2 possible teams in a chess game
      */
     public enum TeamColor {

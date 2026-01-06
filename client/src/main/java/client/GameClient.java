@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import chess.ChessGame;
+import chess.ChessPosition;
 import chess.ChessGame.TeamColor;
 import model.GameData;
 import server.ServerFacade;
@@ -34,7 +35,7 @@ public class GameClient implements Client {
             }
         }
 
-        printGameBoard();
+        printGameBoard(null);
     }
 
     @Override
@@ -73,8 +74,8 @@ public class GameClient implements Client {
         return new ClientResult(ClientType.POSTLOGIN, null, -1, null);
     }
 
-    public ClientResult printGameBoard() {
-        PrintUtilities.printChessBoard(this.clientColor, game.getBoard());
+    public ClientResult printGameBoard(ChessPosition selectedPosition) {
+        PrintUtilities.printChessBoard(this.clientColor, game, selectedPosition);
         return null;
     }
 

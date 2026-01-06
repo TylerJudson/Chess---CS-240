@@ -135,7 +135,7 @@ public class PostloginClient implements Client {
         try {
             int intGameId = Integer.parseInt(gameId);
             ArrayList<GameData> games = serverFacade.listGames(authToken).games();
-            if (1 > intGameId || intGameId > games.size() + 1) {
+            if (1 > intGameId || intGameId > games.size()) {
                 PrintUtilities.printError("Error: invalid game id.");
                 return null;
             }
@@ -172,7 +172,7 @@ public class PostloginClient implements Client {
         try {
             int intGameId = Integer.parseInt(gameId);
             ArrayList<GameData> games = serverFacade.listGames(authToken).games();
-            if (1 > intGameId || intGameId > games.size() + 1) {
+            if (1 > intGameId || intGameId > games.size()) {
                 PrintUtilities.printError("Error: invalid game id.");
                 return null;
             }

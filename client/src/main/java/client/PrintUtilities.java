@@ -2,9 +2,12 @@ package client;
 
 import static ui.EscapeSequences.*;
 
-import chess.ChessBoard;
+import java.util.List;
+
+import chess.ChessGame;
 import chess.ChessPosition;
 import chess.ChessGame.TeamColor;
+import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPiece.PieceType;
 
@@ -29,7 +32,7 @@ public class PrintUtilities {
 
 
 
-    static void printChessBoard(TeamColor color, ChessBoard board) {
+    static void printChessBoard(TeamColor color, ChessGame game, ChessPosition selectedPosition) {
         char[] letters = (color == TeamColor.WHITE ? "abcdefgh" : "hgfedcba").toCharArray();
         char[] numbers = (color == TeamColor.WHITE ? "87654321" : "12345678").toCharArray();
 
@@ -54,7 +57,8 @@ public class PrintUtilities {
                 int row = color == TeamColor.WHITE ? 9 - (i + 1) : i + 1;
                 int col = color == TeamColor.WHITE ? j + 1 : 9 - (j + 1);
                 ChessPosition position = new ChessPosition(row, col);
-                drawSquare((j + i) % 2 == 0 ? TeamColor.WHITE : TeamColor.BLACK, color, board.getPiece(position));
+                String squareColor = getSquareColor(position, game, color, selectedPosition);
+                drawSquare(squareColor, color, game.getBoard().getPiece(position));
             }
             drawSquare(numbers[i]);
             System.out.println();
@@ -92,9 +96,8 @@ public class PrintUtilities {
         System.out.print(SET_BG_COLOR_LIGHT_GREY + "\u2003" + value + " " + RESET_BG_COLOR);
     }
 
-    static void drawSquare(TeamColor squareColor, TeamColor teamColor, ChessPiece piece) {
+    static void drawSquare(String squareColor, TeamColor teamColor, ChessPiece piece) {
         String textColor = "";
-        String bgColor = squareColor == TeamColor.WHITE ? SET_BG_COLOR_WHITE : SET_BG_COLOR_BLACK;
         String pieceString = EMPTY;
         if (piece != null) {
             textColor = teamColor == piece.getTeamColor() ? SET_TEXT_COLOR_BLUE : SET_TEXT_COLOR_RED;
@@ -121,6 +124,34 @@ public class PrintUtilities {
                     break;
             }
         }
-        System.out.print(bgColor + textColor + pieceString + RESET_BG_COLOR + RESET_TEXT_COLOR);
+        System.out.print(squareColor + textColor + pieceString + RESET_BG_COLOR + RESET_TEXT_COLOR);
+    }
+
+
+    static String getSquareColor(ChessPosition position, ChessGame game, TeamColor teamColor, ChessPosition selectedPosition) {
+        if (selectedPosition != null && game.getBoard().getPiece(selectedPosition) != null) {
+            if (position.equals(selectedPosition)) {
+                return SET_BG_COLOR_DARK_GREEN;
+            }
+            
+            List<ChessPosition> endPositions = game.validMoves(selectedPosition).stream().map(ChessMove::getEndPosition).toList();
+            if (endPositions.contains(position)) {
+                ChessPiece pieceAtPosition = game.getBoard().getPiece(position);
+                if (pieceAtPosition != null) {
+                    return SET_BG_COLOR_YELLOW;
+                } 
+                return SET_BG_COLOR_GREEN;
+            }
+        }
+
+        ChessMove prevMove = game.getPreviousMove();
+        if (prevMove != null && (position.equals(prevMove.getStartPosition()) || position.equals(prevMove.getEndPosition()))) {
+            return SET_BG_COLOR_MAGENTA;
+        } 
+        
+        if ((position.getRow() + position.getColumn()) % 2 == 1) {
+            return SET_BG_COLOR_WHITE;
+        }
+        return SET_BG_COLOR_BLACK;
     }
 }
