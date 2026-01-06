@@ -12,7 +12,6 @@ import exceptions.UnauthorizedException;
 import model.AuthData;
 import model.UserData;
 import requests.LoginRequest;
-import requests.LogoutRequest;
 import requests.RegisterRequest;
 import results.LoginResult;
 import results.RegisterResult;
@@ -80,14 +79,14 @@ public class UserService {
         return new LoginResult(userData.username(), authData.authToken());
     }
 
-    public void logout(LogoutRequest logoutRequest) {
+    public void logout(String authToken) {
         // Verify that the authtoken is not empty
-        if (logoutRequest.authtoken() == null || logoutRequest.authtoken().isBlank()) {
+        if (authToken == null || authToken.isBlank()) {
             throw new BadRequestException("bad request");
         }
 
         // Verify that the authoken is valid
-        AuthData authData = this.userDAO.getAuthData(logoutRequest.authtoken());
+        AuthData authData = this.userDAO.getAuthData(authToken);
         if (authData == null) {
             throw new UnauthorizedException("unauthorized");
         }

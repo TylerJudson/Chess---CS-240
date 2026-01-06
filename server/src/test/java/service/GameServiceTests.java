@@ -22,7 +22,6 @@ import exceptions.UnauthorizedException;
 import model.GameData;
 import requests.CreateGameRequest;
 import requests.JoinGameRequest;
-import requests.ListGamesRequest;
 import requests.RegisterRequest;
 import results.CreateGameResult;
 import results.ListGamesResult;
@@ -93,18 +92,16 @@ public class GameServiceTests {
         RegisterResult registerResult = registerBasicUser();
 
         // no games returns an empty list
-        ListGamesRequest request1 = new ListGamesRequest(registerResult.authToken());
-        ListGamesResult result1 = gameService.listGames(request1);
+        ListGamesResult result1 = gameService.listGames(registerResult.authToken());
         assertTrue(result1.games().isEmpty());
-        
+
         Collection<GameData> games2 = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
             CreateGameResult gameResult = gameService.createGame(new CreateGameRequest("Game" + i), registerResult.authToken());
             games2.add(gameDAO.getGame(gameResult.gameID()));
         }
 
-        ListGamesRequest request2 = new ListGamesRequest(registerResult.authToken());
-        ListGamesResult result2 = gameService.listGames(request2);
+        ListGamesResult result2 = gameService.listGames(registerResult.authToken());
 
         assertEquals(result2.games(), games2);
     }
@@ -112,8 +109,7 @@ public class GameServiceTests {
     @Test
     public void listGamesInvalidAuthFails() {
         registerBasicUser();
-        ListGamesRequest request = new ListGamesRequest("invalid");
-        UnauthorizedException ex = assertThrows(UnauthorizedException.class, () -> gameService.listGames(request));
+        UnauthorizedException ex = assertThrows(UnauthorizedException.class, () -> gameService.listGames("invalid"));
         assertEquals("unauthorized", ex.getMessage());
     }
 
@@ -126,14 +122,14 @@ public class GameServiceTests {
         CreateGameResult createGameResult = gameService.createGame(createGameRequest, register1Result.authToken());
 
         // Check joining as white works
-        JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE", createGameResult.gameID(), register1Result.authToken());
-        gameService.joinGame(joinGameRequest);
+        JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE", createGameResult.gameID());
+        gameService.joinGame(joinGameRequest, register1Result.authToken());
         assertEquals(gameDAO.getGame(createGameResult.gameID()).whiteUsername(), "username");
 
         // Check joining as black works
         RegisterResult register2Result = registerBasicUser("username2");
-        JoinGameRequest joinGameRequest2 = new JoinGameRequest("BLACK", createGameResult.gameID(), register2Result.authToken());
-        gameService.joinGame(joinGameRequest2);
+        JoinGameRequest joinGameRequest2 = new JoinGameRequest("BLACK", createGameResult.gameID());
+        gameService.joinGame(joinGameRequest2, register2Result.authToken());
         assertEquals(gameDAO.getGame(createGameResult.gameID()).blackUsername(), "username2");
     }
 
@@ -142,12 +138,12 @@ public class GameServiceTests {
         RegisterResult register1Result = registerBasicUser();
         CreateGameRequest createGameRequest = new CreateGameRequest("gameName");
         CreateGameResult createGameResult = gameService.createGame(createGameRequest, register1Result.authToken());
-        JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE", createGameResult.gameID(), register1Result.authToken());
-        gameService.joinGame(joinGameRequest);
+        JoinGameRequest joinGameRequest = new JoinGameRequest("WHITE", createGameResult.gameID());
+        gameService.joinGame(joinGameRequest, register1Result.authToken());
 
         RegisterResult register2Result = registerBasicUser("username2");
-        JoinGameRequest joinGameRequest2 = new JoinGameRequest("WHITE", createGameResult.gameID(), register2Result.authToken());
-        ForbiddenException ex = assertThrows(ForbiddenException.class, () -> gameService.joinGame(joinGameRequest2));
+        JoinGameRequest joinGameRequest2 = new JoinGameRequest("WHITE", createGameResult.gameID());
+        ForbiddenException ex = assertThrows(ForbiddenException.class, () -> gameService.joinGame(joinGameRequest2, register2Result.authToken()));
         assertEquals(ex.getMessage(), "color already taken");
     }
 
@@ -156,12 +152,12 @@ public class GameServiceTests {
         RegisterResult register1Result = registerBasicUser();
         CreateGameRequest createGameRequest = new CreateGameRequest("gameName");
         CreateGameResult createGameResult = gameService.createGame(createGameRequest, register1Result.authToken());
-        JoinGameRequest joinGameRequest = new JoinGameRequest("BLACK", createGameResult.gameID(), register1Result.authToken());
-        gameService.joinGame(joinGameRequest);
+        JoinGameRequest joinGameRequest = new JoinGameRequest("BLACK", createGameResult.gameID());
+        gameService.joinGame(joinGameRequest, register1Result.authToken());
 
         RegisterResult register2Result = registerBasicUser("username2");
-        JoinGameRequest joinGameRequest2 = new JoinGameRequest("BLACK", createGameResult.gameID(), register2Result.authToken());
-        ForbiddenException ex = assertThrows(ForbiddenException.class, () -> gameService.joinGame(joinGameRequest2));
+        JoinGameRequest joinGameRequest2 = new JoinGameRequest("BLACK", createGameResult.gameID());
+        ForbiddenException ex = assertThrows(ForbiddenException.class, () -> gameService.joinGame(joinGameRequest2, register2Result.authToken()));
         assertEquals(ex.getMessage(), "color already taken");
     }
 

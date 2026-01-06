@@ -5,7 +5,6 @@ import com.google.gson.Gson;
 import io.javalin.http.Context;
 import requests.CreateGameRequest;
 import requests.JoinGameRequest;
-import requests.ListGamesRequest;
 import results.CreateGameResult;
 import results.ListGamesResult;
 import service.GameService;
@@ -27,15 +26,15 @@ public class GameHandler {
     }
 
     public void handleListGames(Context ctx) {
-        ListGamesRequest request = new ListGamesRequest(ctx.header("authorization"));
-        ListGamesResult result = this.gameService.listGames(request);
+        String authToken = ctx.header("authorization");
+        ListGamesResult result = this.gameService.listGames(authToken);
         ctx.status(200).result(gson.toJson(result));
     }
 
     public void handleJoinGames(Context ctx) {
-        JoinGameRequest bodyrequest = gson.fromJson(ctx.body(), JoinGameRequest.class);
-        JoinGameRequest request = new JoinGameRequest(bodyrequest.playerColor(), bodyrequest.gameID(), ctx.header("authorization"));
-        this.gameService.joinGame(request);
+        JoinGameRequest request = gson.fromJson(ctx.body(), JoinGameRequest.class);
+        String authToken = ctx.header("authorization");
+        this.gameService.joinGame(request, authToken);
         ctx.status(200);
     }
 }

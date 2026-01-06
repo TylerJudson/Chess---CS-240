@@ -12,7 +12,6 @@ import model.AuthData;
 import model.GameData;
 import requests.CreateGameRequest;
 import requests.JoinGameRequest;
-import requests.ListGamesRequest;
 import results.CreateGameResult;
 import results.ListGamesResult;
 
@@ -53,9 +52,9 @@ public class GameService {
         return new CreateGameResult(gameData.gameID());
     }
 
-    public ListGamesResult listGames(ListGamesRequest request) {
+    public ListGamesResult listGames(String authToken) {
         // Verify the authToken
-        if (!this.userService.isAuthorized(request.authToken())) {
+        if (!this.userService.isAuthorized(authToken)) {
             throw new UnauthorizedException("unauthorized");
         }
 
@@ -64,16 +63,16 @@ public class GameService {
         return new ListGamesResult(games);
     }
 
-    public void joinGame(JoinGameRequest request) {
+    public void joinGame(JoinGameRequest request, String authToken) {
         // Validate the properties of request
         if (request.playerColor() == null || !(request.playerColor().equals("WHITE") || request.playerColor().equals("BLACK"))
-            || request.authToken() == null || request.authToken().isBlank()
+            || authToken == null || authToken.isBlank()
         ) {
             throw new BadRequestException("bad request");
         }
 
         // Verify that the authoken is valid
-        AuthData authData = this.userService.getAuthData(request.authToken());
+        AuthData authData = this.userService.getAuthData(authToken);
         if (authData == null) {
             throw new UnauthorizedException("unathorized");
         }
