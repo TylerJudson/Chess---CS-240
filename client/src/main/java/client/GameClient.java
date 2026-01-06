@@ -83,13 +83,25 @@ public class GameClient implements Client, ServerMessageObserver {
 
     @Override
     public void help() {
-        System.out.println("""
-                Available Commands:
-                - Move: "m" "move"            | Moves a piece.
-                - Exit: "e" "exit"            | Exit the game.
-                - Quit: "q" "quit"            | Quit the application.
-                - Help: "h" "help"            | List available commands.
-            """);
+        if (isObserving) {
+            System.out.println("""
+                    Available Commands:
+                    - Redraw: "r" "redraw"    | Redraws the game board.
+                    - Show Moves: "s" "show"  | Shows all legal moves for a piece.
+                    - Exit: "e" "exit"        | Exit the game.
+                    - Help: "h" "help"        | List available commands.
+                """);
+        }
+        else {
+            System.out.println("""
+                    Available Commands:
+                    - Move: "m" "move"        | Moves a piece.
+                    - Redraw: "r" "redraw"    | Redraws the game board.
+                    - Show Moves: "s" "show"  | Shows all legal moves for a piece.
+                    - Exit: "e" "exit"        | Exit the game.
+                    - Help: "h" "help"        | List available commands.
+                """);
+        }
     }
 
     @Override
@@ -97,7 +109,18 @@ public class GameClient implements Client, ServerMessageObserver {
         switch (str) {
             case "m":
             case "move":
-                return move();
+                if (!isObserving) {
+                    return move();
+                }
+
+            case "r":
+            case "redraw":
+                return redraw();
+
+            case "s":
+            case "show":
+                return showMoves();
+
             case "e":
             case "exit":
                 return exit(authToken, gameId);
@@ -127,6 +150,24 @@ public class GameClient implements Client, ServerMessageObserver {
         return null;
     }
 
+    private ClientResult redraw() {
+        printGameBoard(null);
+        return null;
+    }
+
+    private ClientResult showMoves() {
+        ChessPosition position = promptForPosition();
+        if (position != null) {
+            if (game.getBoard().getPiece(position) != null) {
+                printGameBoard(position);
+            }
+            else {
+                PrintUtilities.printError("Error: no piece at designated position.");
+            }
+        }
+        return null;
+    }
+
     private ClientResult exit(String authToken, int gameId) {
         try {
             UserGameCommand gameCommand = new UserGameCommand(CommandType.LEAVE, authToken, gameId);
@@ -141,11 +182,27 @@ public class GameClient implements Client, ServerMessageObserver {
         return null;
     }
 
+    
     public ClientResult printGameBoard(ChessPosition selectedPosition) {
         PrintUtilities.printChessBoard(this.clientColor, game, selectedPosition);
         return null;
     }
 
+
+    private ChessPosition promptForPosition() {
+        String letters = "abcdefgh";
+        String numbers = "12345678";
+
+        System.out.print("Position: ");
+        String position = scanner.nextLine();
+        if (position.length() != 2 || letters.indexOf(position.charAt(0)) == -1 || numbers.indexOf(position.charAt(1)) == -1) {
+            PrintUtilities.printError("Error: invalid position.");
+            System.out.println("Position must be of the form 'a1'.");
+            return null;
+        }
+
+        return new ChessPosition(numbers.indexOf(position.charAt(1)) + 1, letters.indexOf(position.charAt(0)) + 1);
+    }
 
 
     private GameData getGameData(int gameId, String authToken) {

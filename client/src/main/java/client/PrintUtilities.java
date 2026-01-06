@@ -131,7 +131,7 @@ public class PrintUtilities {
     static String getSquareColor(ChessPosition position, ChessGame game, TeamColor teamColor, ChessPosition selectedPosition) {
         if (selectedPosition != null && game.getBoard().getPiece(selectedPosition) != null) {
             if (position.equals(selectedPosition)) {
-                return SET_BG_COLOR_DARK_GREEN;
+                return SET_BG_COLOR_MAGENTA;
             }
             
             List<ChessPosition> endPositions = game.validMoves(selectedPosition).stream().map(ChessMove::getEndPosition).toList();
@@ -140,7 +140,10 @@ public class PrintUtilities {
                 if (pieceAtPosition != null) {
                     return SET_BG_COLOR_YELLOW;
                 } 
-                return SET_BG_COLOR_GREEN;
+                if ((position.getRow() + position.getColumn()) % 2 == 1) {
+                    return SET_BG_COLOR_GREEN;
+                }
+                return SET_BG_COLOR_DARK_GREEN;
             }
         }
 
