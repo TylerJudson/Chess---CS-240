@@ -9,12 +9,18 @@ import java.util.Objects;
  * methods.
  */
 public class ServerMessage {
-    ServerMessageType serverMessageType;
+    private ServerMessageType serverMessageType;
+    private String message;
 
     public enum ServerMessageType {
         LOAD_GAME,
         ERROR,
         NOTIFICATION
+    }
+    
+    public ServerMessage(ServerMessageType type, String message) {
+        this.serverMessageType = type;
+        this.message = message;
     }
 
     public ServerMessage(ServerMessageType type) {
@@ -25,6 +31,10 @@ public class ServerMessage {
         return this.serverMessageType;
     }
 
+    public String getMessage() {
+        return this.message;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -33,11 +43,11 @@ public class ServerMessage {
         if (!(o instanceof ServerMessage that)) {
             return false;
         }
-        return getServerMessageType() == that.getServerMessageType();
+        return getServerMessageType() == that.getServerMessageType() && getMessage().equals(that.getMessage());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getServerMessageType());
+        return Objects.hash(getServerMessageType(), getMessage());
     }
 }
