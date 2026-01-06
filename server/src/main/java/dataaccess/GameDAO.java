@@ -1,6 +1,6 @@
 package dataaccess;
 
-import java.util.Collection;
+import java.util.ArrayList;
 
 import model.GameData;
 
@@ -8,7 +8,7 @@ import model.GameData;
 public interface GameDAO {
     void createGame(GameData gameData);
     GameData getGame(int gameID);
-    Collection<GameData> getAllGames();
+    ArrayList<GameData> getAllGames();
     void updateGame(GameData gameData);
     void clearAllData();
 }

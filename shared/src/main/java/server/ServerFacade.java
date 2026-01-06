@@ -12,6 +12,7 @@ import requests.CreateGameRequest;
 import requests.LoginRequest;
 import requests.RegisterRequest;
 import results.CreateGameResult;
+import results.ListGamesResult;
 import results.LoginResult;
 import results.RegisterResult;  
 
@@ -43,6 +44,12 @@ public class ServerFacade {
         var request = buildRequest("POST", "/game", gameRequest, authToken);
         var response = sendRequest(request);
         return handleResponse(response, CreateGameResult.class);
+    }
+
+    public ListGamesResult listGames(String authToken) throws ResponseException {
+        var request = buildRequest("GET", "/game", null, authToken);
+        var response = sendRequest(request);
+        return handleResponse(response, ListGamesResult.class);
     }
 
     private HttpRequest buildRequest(String method, String path, Object body, String authToken) {

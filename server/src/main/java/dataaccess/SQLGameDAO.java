@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
-import java.util.Collection;
 
 import com.google.gson.Gson;
 
@@ -40,7 +39,7 @@ public class SQLGameDAO implements GameDAO {
     }
 
     @Override
-    public Collection<GameData> getAllGames() {
+    public ArrayList<GameData> getAllGames() {
         String statement = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM games";
         ArrayList<GameData> games = new ArrayList<>();
 

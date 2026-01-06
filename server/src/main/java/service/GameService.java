@@ -1,6 +1,6 @@
 package service;
 
-import java.util.Collection;
+import java.util.ArrayList;
 
 import chess.ChessGame;
 import dataaccess.GameDAO;
@@ -59,7 +59,7 @@ public class GameService {
         }
 
         // Get the list of games
-        Collection<GameData> games = this.gameDAO.getAllGames();
+        ArrayList<GameData> games = this.gameDAO.getAllGames();
         return new ListGamesResult(games);
     }
 

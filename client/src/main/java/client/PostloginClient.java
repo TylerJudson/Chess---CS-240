@@ -1,9 +1,12 @@
 package client;
 
+import static ui.EscapeSequences.*;
+
 import java.util.Scanner;
 
+import model.GameData;
 import requests.CreateGameRequest;
-import results.CreateGameResult;
+import results.ListGamesResult;
 import server.ServerFacade;
 
 public class PostloginClient implements Client {
@@ -37,7 +40,7 @@ public class PostloginClient implements Client {
             
             case "l":
             case "list":
-                return list();
+                return list(authToken);
 
             case "j":
             case "join":
@@ -76,7 +79,7 @@ public class PostloginClient implements Client {
         }
 
         try {
-            CreateGameResult result = this.serverFacade.createGame(new CreateGameRequest(gameName), authToken);
+            this.serverFacade.createGame(new CreateGameRequest(gameName), authToken);
 
             PrintUtilities.printSuccess("SUCCESS: " + gameName + " was created.");
         }
@@ -87,7 +90,25 @@ public class PostloginClient implements Client {
         return null;
     }
 
-    private ClientResult list() {
+    private ClientResult list(String authToken) {
+        PrintUtilities.printSection("AVAILABLE GAMES");
+        try {
+            ListGamesResult result = serverFacade.listGames(authToken);
+            for (int i = 0; i < result.games().size(); i++) {
+                GameData game = result.games().get(i);
+                System.out.print("%d. %s".formatted(i, game.gameName()));
+                if (game.whiteUsername() != null) {
+                    System.out.print(SET_BG_COLOR_WHITE + SET_TEXT_COLOR_BLACK + game.whiteUsername());
+                }
+                if (game.blackUsername() != null) {
+                     System.out.print(SET_BG_COLOR_BLACK + SET_TEXT_COLOR_WHITE + game.blackUsername());
+                }
+                System.out.println(RESET_BG_COLOR + RESET_TEXT_COLOR);
+            }
+        }
+        catch (Exception ex) {
+            PrintUtilities.printError(ex.getMessage() + ".");
+        }
         return null;
     }
 
