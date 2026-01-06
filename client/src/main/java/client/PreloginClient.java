@@ -71,7 +71,7 @@ public class PreloginClient implements Client {
             RegisterResult result = this.serverFacade.register(new RegisterRequest(promptResult.username(), 
                                             promptResult.password(), email));
 
-            PrintUtilities.printSuccess("SUCCESS: your account was created with username '" + result.username() + "'.");
+            PrintUtilities.printSuccess("Success: your account was created with username '" + result.username() + "'.");
 
             return new ClientResult(ClientType.POSTLOGIN, result.authToken(), -1);
         }
@@ -93,7 +93,7 @@ public class PreloginClient implements Client {
         try {
             LoginResult result = this.serverFacade.login(new LoginRequest(promptResult.username(), promptResult.password()));
 
-            PrintUtilities.printSuccess("SUCCESS: your are now logged in.");
+            PrintUtilities.printSuccess("Success: your are now logged in.");
 
             return new ClientResult(ClientType.POSTLOGIN, result.authToken(), -1);
         }

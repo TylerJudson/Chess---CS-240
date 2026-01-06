@@ -1,11 +1,11 @@
 package client;
 
-import static ui.EscapeSequences.*;
-
+import java.util.ArrayList;
 import java.util.Scanner;
 
 import model.GameData;
 import requests.CreateGameRequest;
+import requests.JoinGameRequest;
 import results.ListGamesResult;
 import server.ServerFacade;
 
@@ -44,7 +44,7 @@ public class PostloginClient implements Client {
 
             case "j":
             case "join":
-                return join();
+                return join(authToken);
 
             case "o":
             case "observe":
@@ -74,14 +74,14 @@ public class PostloginClient implements Client {
         System.out.print("Game Name: ");
         String gameName = scanner.nextLine();
         if (gameName.isBlank()) {
-            PrintUtilities.printError("Error: Game Name can't be blank.");
+            PrintUtilities.printError("Error: game name can't be blank.");
             return null;
         }
 
         try {
             this.serverFacade.createGame(new CreateGameRequest(gameName), authToken);
 
-            PrintUtilities.printSuccess("SUCCESS: " + gameName + " was created.");
+            PrintUtilities.printSuccess("Success: " + gameName + " was created.");
         }
         catch (Exception ex) {
             PrintUtilities.printError(ex.getMessage() + ".");
@@ -94,17 +94,21 @@ public class PostloginClient implements Client {
         PrintUtilities.printSection("AVAILABLE GAMES");
         try {
             ListGamesResult result = serverFacade.listGames(authToken);
+            if (result.games().size() == 0) {
+                System.out.println("There are no available games.");
+                return null;
+            }
             for (int i = 0; i < result.games().size(); i++) {
                 GameData game = result.games().get(i);
-                System.out.print("%d. %s".formatted(i, game.gameName()));
+                System.out.println("%d. %s".formatted(i + 1, game.gameName()));
                 if (game.whiteUsername() != null) {
-                    System.out.print(SET_BG_COLOR_WHITE + SET_TEXT_COLOR_BLACK + game.whiteUsername());
+                    System.out.println("  └ White: " + game.whiteUsername());
                 }
                 if (game.blackUsername() != null) {
-                     System.out.print(SET_BG_COLOR_BLACK + SET_TEXT_COLOR_WHITE + game.blackUsername());
+                     System.out.println("  └ Black: " + game.blackUsername());
                 }
-                System.out.println(RESET_BG_COLOR + RESET_TEXT_COLOR);
             }
+            System.out.println("\n\n");
         }
         catch (Exception ex) {
             PrintUtilities.printError(ex.getMessage() + ".");
@@ -112,7 +116,46 @@ public class PostloginClient implements Client {
         return null;
     }
 
-    private ClientResult join() {
+    private ClientResult join(String authToken) {
+        PrintUtilities.printSection("JOIN GAME");
+
+        System.out.print("Game Id: ");
+        String gameId = scanner.nextLine();
+        if (gameId.isBlank()) {
+            PrintUtilities.printError("Error: game id can't be blank.");
+            return null;
+        }
+        System.out.print("Team Color (w|b): ");
+        String teamColor = scanner.nextLine().trim().toLowerCase();
+        if (!teamColor.equals("w") && !teamColor.equals("b")) {
+            PrintUtilities.printError("Error: team color must be w or b.");
+            return null;
+        }
+
+        try {
+            int intGameId = Integer.parseInt(gameId);
+            ArrayList<GameData> games = serverFacade.listGames(authToken).games();
+            if (1 > intGameId || intGameId > games.size() + 1) {
+                PrintUtilities.printError("Error: invalid game id.");
+                return null;
+            }
+
+            String joinColor = teamColor.equals("w") ? "WHITE" : "BLACK";
+            GameData game = games.get(intGameId - 1);
+
+            serverFacade.joinGame(new JoinGameRequest(joinColor, game.gameID()), authToken);
+            
+            PrintUtilities.printSuccess("Success: you have joined the game '%s'".formatted(game.gameName()));
+
+            return new ClientResult(ClientType.GAME, authToken, game.gameID());
+        }
+        catch (NumberFormatException ex) {
+            PrintUtilities.printError("Error: invalid game id.");
+        }
+        catch (Exception ex) {
+            PrintUtilities.printError(ex.getMessage() + ".");
+        }
+        
         return null;
     }
 

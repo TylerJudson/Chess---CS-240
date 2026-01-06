@@ -9,6 +9,7 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 
 import requests.CreateGameRequest;
+import requests.JoinGameRequest;
 import requests.LoginRequest;
 import requests.RegisterRequest;
 import results.CreateGameResult;
@@ -50,6 +51,12 @@ public class ServerFacade {
         var request = buildRequest("GET", "/game", null, authToken);
         var response = sendRequest(request);
         return handleResponse(response, ListGamesResult.class);
+    }
+
+    public void joinGame(JoinGameRequest joinRequest, String authToken) throws ResponseException {
+        var request = buildRequest("PUT", "/game", joinRequest, authToken);
+        var result = sendRequest(request);
+        handleResponse(result, null);
     }
 
     private HttpRequest buildRequest(String method, String path, Object body, String authToken) {
