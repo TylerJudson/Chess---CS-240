@@ -2,12 +2,12 @@ package client;
 
 import static ui.EscapeSequences.RESET_TEXT_COLOR;
 import static ui.EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY;
-import static ui.EscapeSequences.moveCursorToLocation;
 
 import java.util.ArrayList;
 import java.util.Scanner;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import chess.ChessPosition;
 import exceptions.ResponseException;
 import chess.ChessGame.TeamColor;
@@ -15,6 +15,7 @@ import model.GameData;
 import server.ServerFacade;
 import server.ServerMessageObserver;
 import server.WebSocketFacade;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.commands.UserGameCommand.CommandType;
 import websocket.messages.LoadGameMessage;
@@ -60,9 +61,6 @@ public class GameClient implements Client, ServerMessageObserver {
     @Override
     public void notify(ServerMessage serverMessage) {
         if (serverMessage != null) {
-
-            System.out.print(moveCursorToLocation(0, -1));
-
             if (serverMessage.getServerMessageType() == ServerMessageType.NOTIFICATION) {
                 System.out.println(SET_TEXT_COLOR_LIGHT_GREY + serverMessage.getMessage() + RESET_TEXT_COLOR);
             }
@@ -76,7 +74,7 @@ public class GameClient implements Client, ServerMessageObserver {
                 }
             }
 
-            moveCursorToLocation(0, 0);
+            System.err.print("\n>> ");
         }
     }
 
@@ -110,7 +108,7 @@ public class GameClient implements Client, ServerMessageObserver {
             case "m":
             case "move":
                 if (!isObserving) {
-                    return move();
+                    return move(authToken, gameId);
                 }
 
             case "r":
@@ -139,14 +137,22 @@ public class GameClient implements Client, ServerMessageObserver {
         return null;
     }
 
-    private ClientResult move() {
+    private ClientResult move(String authToken, int gameId) {
+        System.out.print("Start ");
+        ChessPosition startPosition = promptForPosition();
+
+        System.out.print("End ");
+        ChessPosition endPosition = promptForPosition();
+
+        ChessMove move = new ChessMove(startPosition, endPosition, null);
+
         try {
-            webSocketFacade.performCommand(new UserGameCommand(CommandType.LEAVE, null, null));
-        } catch (ResponseException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            webSocketFacade.performCommand(new MakeMoveCommand(CommandType.MAKE_MOVE, authToken, gameId, move));
+        } 
+        catch (Exception e) {
+            PrintUtilities.printError(e.getMessage() + ".");
         }
-        
+
         return null;
     }
 
@@ -173,21 +179,18 @@ public class GameClient implements Client, ServerMessageObserver {
             UserGameCommand gameCommand = new UserGameCommand(CommandType.LEAVE, authToken, gameId);
             this.webSocketFacade.performCommand(gameCommand);
             PrintUtilities.printSuccess("Success: you have exited the game.");
-            return new ClientResult(ClientType.POSTLOGIN, null, -1, null);
         }
         catch (Exception ex) {
             PrintUtilities.printError(ex.getMessage() + ".");
         }
 
-        return null;
+        return new ClientResult(ClientType.POSTLOGIN, null, -1, null);
     }
 
-    
     public ClientResult printGameBoard(ChessPosition selectedPosition) {
         PrintUtilities.printChessBoard(this.clientColor, game, selectedPosition);
         return null;
     }
-
 
     private ChessPosition promptForPosition() {
         String letters = "abcdefgh";
@@ -203,7 +206,6 @@ public class GameClient implements Client, ServerMessageObserver {
 
         return new ChessPosition(numbers.indexOf(position.charAt(1)) + 1, letters.indexOf(position.charAt(0)) + 1);
     }
-
 
     private GameData getGameData(int gameId, String authToken) {
         try {

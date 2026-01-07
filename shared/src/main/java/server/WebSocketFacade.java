@@ -6,7 +6,9 @@ import exceptions.ResponseException;
 
 import jakarta.websocket.*;
 import websocket.commands.UserGameCommand;
+import websocket.messages.LoadGameMessage;
 import websocket.messages.ServerMessage;
+import websocket.messages.ServerMessage.ServerMessageType;
 
 import java.io.IOException;
 import java.net.URI;
@@ -42,8 +44,13 @@ public class WebSocketFacade extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
-                    ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
-                    serverMessageObserver.notify(serverMessage);
+                    ServerMessage serverMessage = gson.fromJson(message, ServerMessage.class);
+                    if (serverMessage.getServerMessageType() == ServerMessageType.LOAD_GAME) {
+                        serverMessageObserver.notify(gson.fromJson(message, LoadGameMessage.class));
+                    }
+                    else {
+                        serverMessageObserver.notify(serverMessage);
+                    }
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {

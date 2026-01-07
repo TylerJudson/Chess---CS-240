@@ -5,8 +5,12 @@ import java.io.IOException;
 
 
 import com.google.gson.Gson;
+
 import org.eclipse.jetty.websocket.api.Session;
 
+import exceptions.BadRequestException;
+import exceptions.ForbiddenException;
+import exceptions.UnauthorizedException;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsCloseHandler;
 import io.javalin.websocket.WsConnectContext;
@@ -14,10 +18,13 @@ import io.javalin.websocket.WsConnectHandler;
 import io.javalin.websocket.WsMessageContext;
 import io.javalin.websocket.WsMessageHandler;
 import model.AuthData;
+import model.GameData;
+import requests.MakeMoveRequest;
 import service.GameService;
 import service.UserService;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
+import websocket.messages.LoadGameMessage;
 import websocket.messages.ServerMessage;
 import websocket.messages.ServerMessage.ServerMessageType;
 
@@ -50,6 +57,23 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 case RESIGN -> resign(gameCommand, ctx.session);
                 case MAKE_MOVE -> makeMove(gson.fromJson(ctx.message(), MakeMoveCommand.class), ctx.session);
             }
+        } catch (BadRequestException ex) {
+            sendError(ctx.session, "Error: " + ex.getMessage());
+        } catch (UnauthorizedException ex) {
+            sendError(ctx.session, "Error: " + ex.getMessage());
+        } catch (ForbiddenException ex) {
+            sendError(ctx.session, "Error: " + ex.getMessage());
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } catch (Exception ex) {
+            sendError(ctx.session, "Error: " + ex.getMessage());
+        }
+    }
+
+    private void sendError(Session session, String errorMessage) {
+        try {
+            ServerMessage errorMsg = new ServerMessage(ServerMessageType.ERROR, errorMessage);
+            session.getRemote().sendString(gson.toJson(errorMsg));
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -73,13 +97,17 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         connections.remove(session);
     }
     private void resign(UserGameCommand gameCommand, Session session) throws IOException {
+        // TODO: Implement resign capabilities
         String message = "%s has resigned the game.".formatted(getUserName(gameCommand.getAuthToken()));
         ServerMessage serverMessage = new ServerMessage(ServerMessageType.NOTIFICATION, message);
         connections.broadcast(session, serverMessage);
         connections.remove(session);
     }
-    private void makeMove(MakeMoveCommand moveCommand, Session session) {
-        
+    private void makeMove(MakeMoveCommand moveCommand, Session session) throws IOException {
+        GameData gameData = gameService.makeMove(new MakeMoveRequest(moveCommand.getGameID(), moveCommand.getMove()), moveCommand.getAuthToken()).gameData();
+        ServerMessage serverMessage = new LoadGameMessage(ServerMessageType.LOAD_GAME, gameData);
+        connections.broadcast(session, serverMessage);
+        session.getRemote().sendString(new Gson().toJson(serverMessage));
     }
 
     private String getUserName(String authToken) {

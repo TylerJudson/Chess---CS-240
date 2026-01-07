@@ -3,6 +3,8 @@ package service;
 import java.util.ArrayList;
 
 import chess.ChessGame;
+import chess.ChessPiece;
+import chess.ChessGame.TeamColor;
 import dataaccess.GameDAO;
 import dataaccess.SQLGameDAO;
 import exceptions.BadRequestException;
@@ -12,8 +14,10 @@ import model.AuthData;
 import model.GameData;
 import requests.CreateGameRequest;
 import requests.JoinGameRequest;
+import requests.MakeMoveRequest;
 import results.CreateGameResult;
 import results.ListGamesResult;
+import results.MakeMoveResult;
 
 public class GameService {
     private GameDAO gameDAO;
@@ -99,6 +103,58 @@ public class GameService {
             GameData newGameData = new GameData(gameData.gameID(), gameData.whiteUsername(), authData.username(), gameData.gameName(), gameData.game());
             this.gameDAO.updateGame(newGameData);
         }
+    }
+
+
+    public MakeMoveResult makeMove(MakeMoveRequest request, String authToken) {
+        // validate the request
+        if (request == null || request.move() == null) {
+            throw new BadRequestException("bad request");
+        }
+
+        // verify the authtoken
+        AuthData authData = userService.getAuthData(authToken);
+        if (authData == null) {
+            throw new UnauthorizedException("unauthorized");
+        }
+
+        // check to make sure the game exists
+        GameData gameData = this.gameDAO.getGame(request.gameID());
+        if (gameData == null) {
+            throw new BadRequestException("bad request");
+        }
+
+        // check to make sure the user can move the piece
+        
+        ChessGame game = gameData.game();
+        ChessPiece piece = game.getBoard().getPiece(request.move().getStartPosition());
+
+        if (piece == null) {
+            throw new BadRequestException("invalid start position");
+        }
+
+        // the username has to match the gamedata's username of the color the piece is moving
+        if (piece.getTeamColor() == TeamColor.WHITE && !authData.username().equals(gameData.whiteUsername())
+            || piece.getTeamColor() == TeamColor.BLACK && !authData.username().equals(gameData.blackUsername())) {
+                throw new ForbiddenException("you cannot move this piece");
+        }
+
+        // The user has to match the current team's turn
+        if (game.getTeamTurn() == TeamColor.WHITE && !authData.username().equals(gameData.whiteUsername())
+            || game.getTeamTurn() == TeamColor.BLACK && !authData.username().equals(gameData.blackUsername())) {
+                throw new ForbiddenException("it is not your turn");
+        }
+
+        try {
+            game.makeMove(request.move());
+        }
+        catch (Exception ex) {
+            throw new ForbiddenException("invalid move");
+        }
+
+        gameDAO.updateGame(gameData);
+
+        return new MakeMoveResult(gameData);
     }
 
     public void clearAllData() {
