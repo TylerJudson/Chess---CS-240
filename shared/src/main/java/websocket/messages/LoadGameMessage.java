@@ -9,8 +9,8 @@ import model.GameData;
 public class LoadGameMessage extends ServerMessage {
     private GameData gameData;
 
-    public LoadGameMessage(ServerMessageType type, GameData gameData) {
-        super(type);
+    public LoadGameMessage(ServerMessageType type, String message, GameData gameData) {
+        super(type, message);
         this.gameData = gameData;
     }
 

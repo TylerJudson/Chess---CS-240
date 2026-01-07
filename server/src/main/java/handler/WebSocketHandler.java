@@ -6,6 +6,10 @@ import java.io.IOException;
 
 import com.google.gson.Gson;
 
+import chess.ChessMove;
+import chess.ChessPiece;
+import chess.ChessPosition;
+
 import org.eclipse.jetty.websocket.api.Session;
 
 import exceptions.BadRequestException;
@@ -105,7 +109,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
     private void makeMove(MakeMoveCommand moveCommand, Session session) throws IOException {
         GameData gameData = gameService.makeMove(new MakeMoveRequest(moveCommand.getGameID(), moveCommand.getMove()), moveCommand.getAuthToken()).gameData();
-        ServerMessage serverMessage = new LoadGameMessage(ServerMessageType.LOAD_GAME, gameData);
+        String message = getMoveMessage(moveCommand, gameData);
+        ServerMessage serverMessage = new LoadGameMessage(ServerMessageType.LOAD_GAME, message, gameData);
         connections.broadcast(session, serverMessage);
         session.getRemote().sendString(new Gson().toJson(serverMessage));
     }
@@ -116,5 +121,22 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             return authData.username();
         }
         return null;
+    }
+
+    private String getMoveMessage(MakeMoveCommand moveCommand, GameData gameData) {
+        String letters = "abcdefgh";
+        String numbers = "12345678";
+
+        ChessMove move = moveCommand.getMove();
+        ChessPosition startPosition = move.getStartPosition();
+        ChessPosition endPosition = move.getEndPosition();
+        ChessPiece piece = gameData.game().getBoard().getPiece(endPosition);
+
+        String color = piece.getTeamColor().toString();
+        String pieceType = piece.getPieceType().toString();
+        String startString = "" +letters.charAt(startPosition.getColumn() - 1) + numbers.charAt(startPosition.getRow() - 1);
+        String endString = "" +letters.charAt(endPosition.getColumn() - 1) + numbers.charAt(endPosition.getRow() - 1);
+
+        return "%s moved %s from %s to %s.".formatted(color, pieceType, startString, endString);
     }
 }

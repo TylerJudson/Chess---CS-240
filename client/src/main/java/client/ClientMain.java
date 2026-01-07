@@ -62,7 +62,6 @@ public class ClientMain {
                     }
                     else if (clientResult.newClient() == ClientType.GAME) {
                         client = new GameClient(serverFacade, serverUrl, currentAuth, currentGameID, currentUsername);
-                        client.help();
                     }
                 }
             } catch (Throwable e) {

@@ -1,8 +1,5 @@
 package client;
 
-import static ui.EscapeSequences.RESET_TEXT_COLOR;
-import static ui.EscapeSequences.SET_TEXT_COLOR_LIGHT_GREY;
-
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -28,6 +25,9 @@ public class GameClient implements Client, ServerMessageObserver {
     ChessGame game = new ChessGame();
     ServerFacade serverFacade;
     WebSocketFacade webSocketFacade;
+
+    String message;
+    boolean showHelp;
 
     TeamColor clientColor = TeamColor.WHITE;
     boolean isObserving = false;
@@ -56,25 +56,31 @@ public class GameClient implements Client, ServerMessageObserver {
                 this.isObserving = true;
             }
         }
+
+        showHelp = true;
+
+        redraw();
     }
 
     @Override
     public void notify(ServerMessage serverMessage) {
         if (serverMessage != null) {
             if (serverMessage.getServerMessageType() == ServerMessageType.NOTIFICATION) {
-                System.out.println(SET_TEXT_COLOR_LIGHT_GREY + serverMessage.getMessage() + RESET_TEXT_COLOR);
+                message = serverMessage.getMessage();
+                redraw();
             }
             else if (serverMessage.getServerMessageType() == ServerMessageType.ERROR) {
-                PrintUtilities.printError(serverMessage.getMessage());
+                redraw();
+                PrintUtilities.printError(serverMessage.getMessage() + ".");
             }
             else if (serverMessage.getServerMessageType() == ServerMessageType.LOAD_GAME) {
                 if (serverMessage instanceof LoadGameMessage) {
+                    message = serverMessage.getMessage();
                     this.game = ((LoadGameMessage)serverMessage).getGameData().game();
-                    printGameBoard(null);
                 }
+                redraw();
             }
-
-            System.err.print("\n>> ");
+            System.out.print(">> ");
         }
     }
 
@@ -104,6 +110,7 @@ public class GameClient implements Client, ServerMessageObserver {
 
     @Override
     public ClientResult eval(String str, String authToken, int gameId) {
+        showHelp = false;
         switch (str) {
             case "m":
             case "move":
@@ -125,10 +132,12 @@ public class GameClient implements Client, ServerMessageObserver {
 
             case "h":
             case "help":
-                help();
+                showHelp = true;
+                redraw();
                 break;
 
             default:
+                redraw();
                 PrintUtilities.printError("Error: Unkown Command: '" + str + "'.");
                 System.out.println("Type \"help\" to see available commands.\n");
                 break;
@@ -140,9 +149,15 @@ public class GameClient implements Client, ServerMessageObserver {
     private ClientResult move(String authToken, int gameId) {
         System.out.print("Start ");
         ChessPosition startPosition = promptForPosition();
+        if (startPosition == null) {
+            return null;
+        }
 
         System.out.print("End ");
         ChessPosition endPosition = promptForPosition();
+        if (endPosition == null) {
+            return null;
+        }
 
         ChessMove move = new ChessMove(startPosition, endPosition, null);
 
@@ -157,7 +172,7 @@ public class GameClient implements Client, ServerMessageObserver {
     }
 
     private ClientResult redraw() {
-        printGameBoard(null);
+        printScreen(null);
         return null;
     }
 
@@ -165,7 +180,7 @@ public class GameClient implements Client, ServerMessageObserver {
         ChessPosition position = promptForPosition();
         if (position != null) {
             if (game.getBoard().getPiece(position) != null) {
-                printGameBoard(position);
+                printScreen(position);
             }
             else {
                 PrintUtilities.printError("Error: no piece at designated position.");
@@ -187,11 +202,6 @@ public class GameClient implements Client, ServerMessageObserver {
         return new ClientResult(ClientType.POSTLOGIN, null, -1, null);
     }
 
-    public ClientResult printGameBoard(ChessPosition selectedPosition) {
-        PrintUtilities.printChessBoard(this.clientColor, game, selectedPosition);
-        return null;
-    }
-
     private ChessPosition promptForPosition() {
         String letters = "abcdefgh";
         String numbers = "12345678";
@@ -199,6 +209,7 @@ public class GameClient implements Client, ServerMessageObserver {
         System.out.print("Position: ");
         String position = scanner.nextLine();
         if (position.length() != 2 || letters.indexOf(position.charAt(0)) == -1 || numbers.indexOf(position.charAt(1)) == -1) {
+            redraw();
             PrintUtilities.printError("Error: invalid position.");
             System.out.println("Position must be of the form 'a1'.");
             return null;
@@ -220,5 +231,27 @@ public class GameClient implements Client, ServerMessageObserver {
             PrintUtilities.printError(ex.getMessage() + ".");
         }
         return null;
+    }
+
+    private void printScreen(ChessPosition selectedPosition) {
+        PrintUtilities.clearScreen();
+
+        PrintUtilities.printChessBoard(clientColor, game, selectedPosition);
+
+        System.out.println();
+
+        PrintUtilities.printMessage(message == null ? "" : message);
+
+        System.out.println();
+
+        System.out.println(game.getTeamTurn() + " to move.");
+
+        System.out.println();
+
+        if (showHelp) {
+            help();
+        }
+
+        System.out.flush();
     }
 }
