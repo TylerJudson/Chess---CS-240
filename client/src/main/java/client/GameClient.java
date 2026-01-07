@@ -39,8 +39,7 @@ public class GameClient implements Client, ServerMessageObserver {
             this.webSocketFacade = new WebSocketFacade(serverUrl, this);
             this.webSocketFacade.performCommand(new UserGameCommand(CommandType.CONNECT, authToken, gameId));
         } catch (ResponseException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            PrintUtilities.printError(e.getMessage() + '.');
         }
 
         GameData gameData = getGameData(gameId, authToken);
@@ -87,7 +86,7 @@ public class GameClient implements Client, ServerMessageObserver {
 
     @Override
     public void help() {
-        if (isObserving) {
+        if (isObserving || game.getGameOver()) {
             System.out.println("""
                     Available Commands:
                     - Redraw: "r" "redraw"    | Redraws the game board.
@@ -114,7 +113,7 @@ public class GameClient implements Client, ServerMessageObserver {
         switch (str) {
             case "m":
             case "move":
-                if (!isObserving) {
+                if (!isObserving && !game.getGameOver()) {
                     return move(authToken, gameId);
                 }
 
@@ -240,11 +239,31 @@ public class GameClient implements Client, ServerMessageObserver {
 
         System.out.println();
 
-        PrintUtilities.printMessage(message == null ? "" : message);
+        if (game.getGameOver()) {
+            if (game.isInStalemate(game.getTeamTurn())) {
+                System.out.println("THE GAME ENDED IN STALEMATE");
+            }
+            else if (game.isInCheckmate(game.getTeamTurn())) {
+                if (game.getTeamTurn() != clientColor) {
+                    PrintUtilities.printSuccess("CONGRATULATIONS! YOU WON!");
+                }
+                else {
+                    PrintUtilities.printError("CHECKMATE: YOU LOST.");
+                }
+            }
+            else {
+                System.out.println("PRINT RESIGN");
+            }
+        }
+        else {
+            PrintUtilities.printMessage(message == null ? "" : message);
+            System.out.println();
+            System.out.println(game.getTeamTurn() + " to move.");
 
-        System.out.println();
-
-        System.out.println(game.getTeamTurn() + " to move.");
+            if (game.isInCheck(clientColor)) {
+                PrintUtilities.printError("YOU ARE IN CHECK");
+            }
+        }
 
         System.out.println();
 

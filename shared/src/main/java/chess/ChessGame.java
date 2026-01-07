@@ -25,6 +25,8 @@ public class ChessGame {
 
     private ChessMove previousMove;
 
+    private boolean gameOver;
+
     public ChessGame() {
         this.board = new ChessBoard();
         this.board.resetBoard();
@@ -36,6 +38,8 @@ public class ChessGame {
         this.blackQueenSideCastlingHasMoved = false;
 
         this.previousMove = null;
+
+        this.gameOver = false;
     }
 
     /**
@@ -75,6 +79,22 @@ public class ChessGame {
     public enum TeamColor {
         WHITE,
         BLACK
+    }
+
+    /**
+     * Get's whether the game is over or not.
+     * @return
+     */
+    public boolean getGameOver() {
+        return this.gameOver;
+    }
+
+    /**
+     * Set's the status of the game
+     * @param gameOver
+     */
+    public void setGameOver(boolean gameOver) {
+        this.gameOver = gameOver;
     }
 
     /**
@@ -118,7 +138,7 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        if (!isValidMove(move, this.getTeamTurn())) {
+        if (!isValidMove(move, this.getTeamTurn()) || getGameOver()) {
             throw new InvalidMoveException();
         }
 
@@ -143,6 +163,13 @@ public class ChessGame {
 
         this.previousMove = move;
         this.changeTeamTurn();
+
+        if (isInCheckmate(this.getTeamTurn())) {
+            setGameOver(true);
+        }
+        else if (isInStalemate(this.getTeamTurn())) {
+            setGameOver(true);
+        }
     }
 
     /**
