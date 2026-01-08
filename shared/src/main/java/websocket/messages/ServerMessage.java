@@ -11,16 +11,21 @@ import java.util.Objects;
 public class ServerMessage {
     private ServerMessageType serverMessageType;
     private String message;
+    private String errorMessage;
 
     public enum ServerMessageType {
         LOAD_GAME,
         ERROR,
         NOTIFICATION
     }
-    
+
     public ServerMessage(ServerMessageType type, String message) {
         this.serverMessageType = type;
-        this.message = message;
+        if (type == ServerMessageType.ERROR) {
+            this.errorMessage = message;
+        } else {
+            this.message = message;
+        }
     }
 
     public ServerMessage(ServerMessageType type) {
@@ -33,6 +38,10 @@ public class ServerMessage {
 
     public String getMessage() {
         return this.message;
+    }
+
+    public String getErrorMessage() {
+        return this.errorMessage;
     }
 
     @Override

@@ -75,7 +75,7 @@ public class GameClient implements Client, ServerMessageObserver {
             else if (serverMessage.getServerMessageType() == ServerMessageType.LOAD_GAME) {
                 if (serverMessage instanceof LoadGameMessage) {
                     message = serverMessage.getMessage();
-                    this.game = ((LoadGameMessage)serverMessage).getGameData().game();
+                    this.game = ((LoadGameMessage)serverMessage).getGame();
                 }
                 redraw();
             }

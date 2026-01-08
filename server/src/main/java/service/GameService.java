@@ -88,8 +88,16 @@ public class GameService {
         }
 
         // Check to see if the color is already in use
-        if ((request.playerColor().equals("WHITE") && gameData.whiteUsername() != null && !gameData.whiteUsername().isBlank())
-            || request.playerColor().equals("BLACK") && gameData.blackUsername() != null && !gameData.blackUsername().isBlank()
+        if ((
+                request.playerColor().equals("WHITE") 
+                && gameData.whiteUsername() != null 
+                && !gameData.whiteUsername().isBlank() 
+                && !authData.username().equals(gameData.whiteUsername())
+            )
+            || request.playerColor().equals("BLACK") 
+            && gameData.blackUsername() != null 
+            && !gameData.blackUsername().isBlank() 
+            && !authData.username().equals(gameData.blackUsername())
         ) {
             throw new ForbiddenException("color already taken");
         }
@@ -125,7 +133,7 @@ public class GameService {
         }
 
         // check to make sure the user can move the piece
-        
+
         ChessGame game = gameData.game();
         ChessPiece piece = game.getBoard().getPiece(request.move().getStartPosition());
 
@@ -155,6 +163,21 @@ public class GameService {
         gameDAO.updateGame(gameData);
 
         return new MakeMoveResult(gameData);
+    }
+
+    public GameData getGame(int gameID, String authToken) {
+        // Verify that the authoken is valid
+        if (!this.userService.isAuthorized(authToken)) {
+            throw new UnauthorizedException("unauthorized");
+        }
+
+        // Verify that the game exists
+        GameData gameData = this.gameDAO.getGame(gameID);
+        if (gameData == null) {
+            throw new BadRequestException("bad request");
+        }
+
+        return gameData;
     }
 
     public void clearAllData() {

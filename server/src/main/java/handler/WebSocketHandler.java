@@ -89,30 +89,59 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void connect(UserGameCommand gameCommand, Session session) throws IOException {
-        connections.add(session);
+        // Get game data - validation happens in service
+        GameData gameData = gameService.getGame(gameCommand.getGameID(), gameCommand.getAuthToken());
+
+        connections.add(gameCommand.getGameID(), session);
+
+        // Send LOAD_GAME to the connecting user
+        LoadGameMessage loadGameMessage = new LoadGameMessage(ServerMessageType.LOAD_GAME, gameData.game());
+        session.getRemote().sendString(gson.toJson(loadGameMessage));
+
+        // Broadcast NOTIFICATION to other users
         String message = "%s joined the game.".formatted(getUserName(gameCommand.getAuthToken()));
-        ServerMessage serverMessage = new ServerMessage(ServerMessageType.NOTIFICATION, message);
-        connections.broadcast(session, serverMessage);
+        ServerMessage notification = new ServerMessage(ServerMessageType.NOTIFICATION, message);
+        connections.broadcast(gameCommand.getGameID(), session, notification);
     }
     private void leave(UserGameCommand gameCommand, Session session) throws IOException {
         String message = "%s has left the game.".formatted(getUserName(gameCommand.getAuthToken()));
         ServerMessage serverMessage = new ServerMessage(ServerMessageType.NOTIFICATION, message);
-        connections.broadcast(session, serverMessage);
-        connections.remove(session);
+        connections.broadcast(gameCommand.getGameID(), session, serverMessage);
+        connections.remove(gameCommand.getGameID(), session);
     }
     private void resign(UserGameCommand gameCommand, Session session) throws IOException {
         // TODO: Implement resign capabilities
         String message = "%s has resigned the game.".formatted(getUserName(gameCommand.getAuthToken()));
-        ServerMessage serverMessage = new ServerMessage(ServerMessageType.NOTIFICATION, message);
-        connections.broadcast(session, serverMessage);
-        connections.remove(session);
+        ServerMessage notification = new ServerMessage(ServerMessageType.NOTIFICATION, message);
+
+        // Send to sender
+        session.getRemote().sendString(gson.toJson(notification));
+
+        // Broadcast to others
+        connections.broadcast(gameCommand.getGameID(), session, notification);
     }
+
     private void makeMove(MakeMoveCommand moveCommand, Session session) throws IOException {
         GameData gameData = gameService.makeMove(new MakeMoveRequest(moveCommand.getGameID(), moveCommand.getMove()), moveCommand.getAuthToken()).gameData();
         String message = getMoveMessage(moveCommand, gameData);
-        ServerMessage serverMessage = new LoadGameMessage(ServerMessageType.LOAD_GAME, message, gameData);
-        connections.broadcast(session, serverMessage);
-        session.getRemote().sendString(new Gson().toJson(serverMessage));
+
+        // Send LOAD_GAME to sender
+        LoadGameMessage loadGame = new LoadGameMessage(ServerMessageType.LOAD_GAME, gameData.game());
+        session.getRemote().sendString(gson.toJson(loadGame));
+
+        // Broadcast LOAD_GAME to others
+        connections.broadcast(moveCommand.getGameID(), session, loadGame);
+
+        // Broadcast NOTIFICATION to others
+        ServerMessage notification = new ServerMessage(ServerMessageType.NOTIFICATION, message);
+        connections.broadcast(moveCommand.getGameID(), session, notification);
+
+        if (gameData.game().isInCheckmate(gameData.game().getTeamTurn())) {
+            // Send NOTIFICATION to everyone (sender and others)
+            ServerMessage notification2 = new ServerMessage(ServerMessageType.NOTIFICATION, "Checkmate!");
+            session.getRemote().sendString(gson.toJson(notification2));
+            connections.broadcast(moveCommand.getGameID(), session, notification2);
+        }
     }
 
     private String getUserName(String authToken) {

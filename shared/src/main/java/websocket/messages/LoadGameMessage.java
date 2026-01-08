@@ -2,20 +2,20 @@ package websocket.messages;
 
 import java.util.Objects;
 
-import model.GameData;
+import chess.ChessGame;
 
 
 
 public class LoadGameMessage extends ServerMessage {
-    private GameData gameData;
+    private ChessGame game;
 
-    public LoadGameMessage(ServerMessageType type, String message, GameData gameData) {
-        super(type, message);
-        this.gameData = gameData;
+    public LoadGameMessage(ServerMessageType type, ChessGame game) {
+        super(type);
+        this.game = game;
     }
 
-    public GameData getGameData() {
-        return this.gameData;
+    public ChessGame getGame() {
+        return this.game;
     }
 
     @Override
@@ -29,11 +29,11 @@ public class LoadGameMessage extends ServerMessage {
         if (!super.equals(o)) {
             return false;
         }
-        return Objects.equals(getGameData(), that.getGameData());
+        return Objects.equals(getGame(), that.getGame());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), getGameData());
+        return Objects.hash(super.hashCode(), getGame());
     }
 }

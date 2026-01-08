@@ -33,7 +33,7 @@ public class WebSocketTests {
     @BeforeAll
     public static void init() throws URISyntaxException {
         server = new Server();
-        var port = Integer.toString(server.run(0));
+        var port = Integer.toString(server.run(8080));
         System.out.println("Started test HTTP server on " + port);
 
         serverFacade = new TestServerFacade("localhost", port);
