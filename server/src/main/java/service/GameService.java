@@ -134,11 +134,11 @@ public class GameService {
         }
 
         // Update the game
-        if (gameData.whiteUsername().equals(authData.username())) {
+        if (gameData.whiteUsername() != null && gameData.whiteUsername().equals(authData.username())) {
             GameData newGameData = new GameData(gameData.gameID(), null, gameData.blackUsername(), gameData.gameName(), gameData.game());
             gameDAO.updateGame(newGameData);
         }
-        else if (gameData.blackUsername().equals(authData.username())) {
+        else if (gameData.blackUsername() != null && gameData.blackUsername().equals(authData.username())) {
             GameData newGameData = new GameData(gameData.gameID(), gameData.whiteUsername(), null, gameData.gameName(), gameData.game());
             gameDAO.updateGame(newGameData);
         }
