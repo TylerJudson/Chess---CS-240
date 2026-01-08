@@ -100,8 +100,17 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         LoadGameMessage loadGameMessage = new LoadGameMessage(ServerMessageType.LOAD_GAME, gameData.game());
         session.getRemote().sendString(gson.toJson(loadGameMessage));
 
+        // Determine if the new user is an observer or not.
+        String username = getUserName(gameCommand.getAuthToken());
+        String message = "";
+        if (!username.equals(gameData.whiteUsername()) && !username.equals(gameData.blackUsername())) {
+                message = "%s joined the game as an observer.".formatted(username);
+        }
+        else {
+            message = "%s joined the game.".formatted(username);
+        }
+
         // Broadcast NOTIFICATION to other users
-        String message = "%s joined the game.".formatted(getUserName(gameCommand.getAuthToken()));
         ServerMessage notification = new ServerMessage(ServerMessageType.NOTIFICATION, message);
         connections.broadcast(gameCommand.getGameID(), session, notification);
     }

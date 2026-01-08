@@ -41,24 +41,6 @@ public class GameClient implements Client, ServerMessageObserver {
         } catch (ResponseException e) {
             PrintUtilities.printError(e.getMessage() + '.');
         }
-
-        GameData gameData = getGameData(gameId, authToken);
-        if (gameData != null) {
-            this.game = gameData.game();
-            if (username.equals(gameData.whiteUsername())) {
-                this.clientColor = TeamColor.WHITE;
-            }
-            else if (username.equals(gameData.blackUsername())) {
-                this.clientColor = TeamColor.BLACK;
-            }
-            else {
-                this.isObserving = true;
-            }
-        }
-
-        showHelp = true;
-
-        redraw();
     }
 
     @Override
