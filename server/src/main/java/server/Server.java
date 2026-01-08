@@ -10,6 +10,7 @@ import exceptions.UnauthorizedException;
 import handler.ApplicationHandler;
 import handler.GameHandler;
 import handler.UserHandler;
+import handler.WebSocketHandler;
 import io.javalin.*;
 import service.ApplicationService;
 import service.GameService;
@@ -27,6 +28,7 @@ public class Server {
     private UserHandler userHandler;
     private GameHandler gameHandler;
     private ApplicationHandler applicationHandler;
+    private WebSocketHandler webSocketHandler;
 
     public Server() {
         this.userService = new UserService();
@@ -35,6 +37,7 @@ public class Server {
         this.userHandler = new UserHandler(userService);
         this.gameHandler = new GameHandler(gameService);
         this.applicationHandler = new ApplicationHandler(applicationService);
+        this.webSocketHandler = new WebSocketHandler(userService, gameService);
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
 
@@ -64,6 +67,13 @@ public class Server {
 
         javalin.exception(Exception.class, (e, ctx) -> {
             ctx.status(500).result(gson.toJson(Map.of("message", "Error: " + e.getMessage())));
+        });
+
+        // Websockets
+        javalin.ws("/ws", ws -> {
+            ws.onConnect(webSocketHandler);
+            ws.onMessage(webSocketHandler);
+            ws.onClose(webSocketHandler);
         });
     }
 

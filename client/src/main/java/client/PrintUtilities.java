@@ -29,8 +29,18 @@ public class PrintUtilities {
         System.out.println(SET_TEXT_COLOR_RED + message + "\n\n" + RESET_TEXT_COLOR);
     }
 
+    static void printMessage(String message) {
+        System.out.println(SET_TEXT_COLOR_LIGHT_GREY + message + RESET_TEXT_COLOR);
+    }
 
+    static void clearLine(int row) {
+        System.out.print(moveCursorToLocation(0, row));
+        System.out.print(ERASE_LINE + "\n");
+    }
 
+    static void clearScreen() {
+        System.out.print(ERASE_SCREEN);
+    }
 
     static void printChessBoard(TeamColor color, ChessGame game, ChessPosition selectedPosition) {
         char[] letters = (color == TeamColor.WHITE ? "abcdefgh" : "hgfedcba").toCharArray();
@@ -129,9 +139,10 @@ public class PrintUtilities {
 
 
     static String getSquareColor(ChessPosition position, ChessGame game, TeamColor teamColor, ChessPosition selectedPosition) {
+        ChessMove prevMove = game.getPreviousMove();
         if (selectedPosition != null && game.getBoard().getPiece(selectedPosition) != null) {
             if (position.equals(selectedPosition)) {
-                return SET_BG_COLOR_DARK_GREEN;
+                return SET_BG_COLOR_MAGENTA;
             }
             
             List<ChessPosition> endPositions = game.validMoves(selectedPosition).stream().map(ChessMove::getEndPosition).toList();
@@ -140,12 +151,13 @@ public class PrintUtilities {
                 if (pieceAtPosition != null) {
                     return SET_BG_COLOR_YELLOW;
                 } 
-                return SET_BG_COLOR_GREEN;
+                if ((position.getRow() + position.getColumn()) % 2 == 1) {
+                    return SET_BG_COLOR_GREEN;
+                }
+                return SET_BG_COLOR_DARK_GREEN;
             }
         }
-
-        ChessMove prevMove = game.getPreviousMove();
-        if (prevMove != null && (position.equals(prevMove.getStartPosition()) || position.equals(prevMove.getEndPosition()))) {
+        else if (prevMove != null && (position.equals(prevMove.getStartPosition()) || position.equals(prevMove.getEndPosition()))) {
             return SET_BG_COLOR_MAGENTA;
         } 
         
