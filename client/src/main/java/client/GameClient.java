@@ -5,9 +5,11 @@ import java.util.Scanner;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPiece;
 import chess.ChessPosition;
 import exceptions.ResponseException;
 import chess.ChessGame.TeamColor;
+import chess.ChessPiece.PieceType;
 import model.GameData;
 import server.ServerFacade;
 import server.ServerMessageObserver;
@@ -167,7 +169,42 @@ public class GameClient implements Client, ServerMessageObserver {
             return null;
         }
 
-        ChessMove move = new ChessMove(startPosition, endPosition, null);
+
+       
+        PieceType promotionType = null;
+
+        ChessPiece piece = game.getBoard().getPiece(startPosition);
+        if (clientColor == TeamColor.WHITE && endPosition.getRow() == 8 
+            && piece != null && piece.getPieceType() == PieceType.PAWN
+        ) {
+            System.out.print("Promotion type (");
+            for (int i = 0; i < ChessPiece.Promotions.length; i++) {
+                if (i > 0) System.out.print(", ");
+                System.out.print(ChessPiece.Promotions[i].toString().toLowerCase());
+            }
+            System.out.print("): ");
+
+
+            String promotionString = scanner.nextLine();
+            switch (promotionString.toLowerCase()) {
+                case "queen":
+                    promotionType = PieceType.QUEEN;
+                    break;
+                case "bishop":
+                    promotionType = PieceType.BISHOP;
+                    break;
+                case "knight":
+                    promotionType = PieceType.KNIGHT;
+                    break;
+                case "rook":
+                    promotionType = PieceType.ROOK;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        ChessMove move = new ChessMove(startPosition, endPosition, promotionType);
 
         try {
             webSocketFacade.performCommand(new MakeMoveCommand(CommandType.MAKE_MOVE, authToken, gameId, move));

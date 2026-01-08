@@ -111,7 +111,13 @@ public class ChessBoard {
         ChessBoard copy = new ChessBoard();
         for (int i = 1; i <= 8; i++) {
             for (int j = 1; j <= 8; j++) {
-                copy.addPiece(new ChessPosition(i, j), original.getPiece(new ChessPosition(i, j)));
+                ChessPiece originalPiece = original.getPiece(new ChessPosition(i, j));
+                if (originalPiece != null) {
+                    ChessPiece copiedPiece = new ChessPiece(originalPiece.getTeamColor(), originalPiece.getPieceType());
+                    copy.addPiece(new ChessPosition(i, j), copiedPiece);
+                } else {
+                    copy.addPiece(new ChessPosition(i, j), null);
+                }
             }
         }
         return copy;
