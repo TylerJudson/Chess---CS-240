@@ -135,7 +135,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private void makeMove(MakeMoveCommand moveCommand, Session session) throws IOException {
         GameData gameData = gameService.makeMove(new MakeMoveRequest(moveCommand.getGameID(), moveCommand.getMove()), moveCommand.getAuthToken()).gameData();
-        String message = getMoveMessage(moveCommand, gameData);
+        String message = getMoveMessage(moveCommand, gameData, getUserName(moveCommand.getAuthToken()));
 
         // Send LOAD_GAME to sender
         LoadGameMessage loadGame = new LoadGameMessage(ServerMessageType.LOAD_GAME, gameData.game());
@@ -144,16 +144,17 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         // Broadcast LOAD_GAME to others
         connections.broadcast(moveCommand.getGameID(), session, loadGame);
 
+        // THIS LOGIC IS HERE ONLY TO PASS THE TESTS
+        if (gameData.game().isInCheckmate(gameData.game().getTeamTurn())) {
+            ServerMessage checkMateNotification = new ServerMessage(ServerMessageType.NOTIFICATION, "Checkmate!");
+            session.getRemote().sendString(gson.toJson(checkMateNotification));
+            connections.broadcast(moveCommand.getGameID(), session, checkMateNotification);
+        }
+
         // Broadcast NOTIFICATION to others
         ServerMessage notification = new ServerMessage(ServerMessageType.NOTIFICATION, message);
         connections.broadcast(moveCommand.getGameID(), session, notification);
 
-        if (gameData.game().isInCheckmate(gameData.game().getTeamTurn())) {
-            // Send NOTIFICATION to everyone (sender and others)
-            ServerMessage notification2 = new ServerMessage(ServerMessageType.NOTIFICATION, "Checkmate!");
-            session.getRemote().sendString(gson.toJson(notification2));
-            connections.broadcast(moveCommand.getGameID(), session, notification2);
-        }
     }
 
     private String getUserName(String authToken) {
@@ -164,7 +165,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         return null;
     }
 
-    private String getMoveMessage(MakeMoveCommand moveCommand, GameData gameData) {
+    private String getMoveMessage(MakeMoveCommand moveCommand, GameData gameData, String username) {
         String letters = "abcdefgh";
         String numbers = "12345678";
 
@@ -178,6 +179,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         String startString = "" +letters.charAt(startPosition.getColumn() - 1) + numbers.charAt(startPosition.getRow() - 1);
         String endString = "" +letters.charAt(endPosition.getColumn() - 1) + numbers.charAt(endPosition.getRow() - 1);
 
-        return "%s moved %s from %s to %s.".formatted(color, pieceType, startString, endString);
+        return "(%s) %s moved %s from %s to %s.".formatted(color, username, pieceType, startString, endString);
     }
 }

@@ -34,6 +34,21 @@ public class GameClient implements Client, ServerMessageObserver {
 
     public GameClient(ServerFacade serverFacade, String serverUrl, String authToken, int gameId, String username) {
         this.serverFacade = serverFacade;
+
+        PrintUtilities.clearScreen();
+
+        GameData gameData = getGameData(gameId, authToken);
+        if (gameData != null) {
+            if (username.equals(gameData.whiteUsername())) {
+                this.clientColor = TeamColor.WHITE;
+            }
+            else if (username.equals(gameData.blackUsername())) {
+                this.clientColor = TeamColor.BLACK;
+            }
+            else {
+                this.isObserving = true;
+            }
+        }
         
         try {
             this.webSocketFacade = new WebSocketFacade(serverUrl, this);
@@ -41,6 +56,8 @@ public class GameClient implements Client, ServerMessageObserver {
         } catch (ResponseException e) {
             PrintUtilities.printError(e.getMessage() + '.');
         }
+
+        
     }
 
     @Override
@@ -52,7 +69,7 @@ public class GameClient implements Client, ServerMessageObserver {
             }
             else if (serverMessage.getServerMessageType() == ServerMessageType.ERROR) {
                 redraw();
-                PrintUtilities.printError(serverMessage.getMessage() + ".");
+                PrintUtilities.printError(serverMessage.getErrorMessage() + ".");
             }
             else if (serverMessage.getServerMessageType() == ServerMessageType.LOAD_GAME) {
                 if (serverMessage instanceof LoadGameMessage) {
