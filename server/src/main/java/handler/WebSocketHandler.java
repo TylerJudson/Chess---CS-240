@@ -25,6 +25,7 @@ import model.AuthData;
 import model.GameData;
 import requests.LeaveGameRequest;
 import requests.MakeMoveRequest;
+import requests.ResignGameRequest;
 import service.GameService;
 import service.UserService;
 import websocket.commands.MakeMoveCommand;
@@ -112,7 +113,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         connections.remove(gameCommand.getGameID(), session);
     }
     private void resign(UserGameCommand gameCommand, Session session) throws IOException {
-        // TODO: Implement resign capabilities
+        gameService.resign(new ResignGameRequest(gameCommand.getGameID()), gameCommand.getAuthToken());
         String message = "%s has resigned the game.".formatted(getUserName(gameCommand.getAuthToken()));
         ServerMessage notification = new ServerMessage(ServerMessageType.NOTIFICATION, message);
 

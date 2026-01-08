@@ -16,6 +16,7 @@ import requests.CreateGameRequest;
 import requests.JoinGameRequest;
 import requests.LeaveGameRequest;
 import requests.MakeMoveRequest;
+import requests.ResignGameRequest;
 import results.CreateGameResult;
 import results.ListGamesResult;
 import results.MakeMoveResult;
@@ -143,6 +144,40 @@ public class GameService {
         }
     }
 
+    public void resign(ResignGameRequest request, String authToken) {
+        // validate the request
+        if (request == null) {
+            throw new BadRequestException("bad request");
+        }
+
+        // verify the authtoken
+        AuthData authData = userService.getAuthData(authToken);
+        if (authData == null) {
+            throw new UnauthorizedException("unauthorized");
+        }
+
+        // verify the gameID
+        GameData gameData = gameDAO.getGame(request.gameID());
+        if (gameData == null) {
+            throw new BadRequestException("bad request");
+        }
+
+        // verify that the user is actually apart of the game
+        if (!gameData.whiteUsername().equals(authData.username()) && !gameData.blackUsername().equals(authData.username())) {
+            throw new ForbiddenException("you cannot resign the game");
+        }
+
+        // verify that the game isn't already over
+        if (gameData.game().getGameOver()) {
+            throw new ForbiddenException("the game is already over");
+        }
+
+        // update the game to the game over status
+        gameData.game().setGameOver(true);
+
+        gameDAO.updateGame(gameData);
+    }
+
     public MakeMoveResult makeMove(MakeMoveRequest request, String authToken) {
         // validate the request
         if (request == null || request.move() == null) {
@@ -165,6 +200,9 @@ public class GameService {
 
         ChessGame game = gameData.game();
         ChessPiece piece = game.getBoard().getPiece(request.move().getStartPosition());
+        if (game.getGameOver()) {
+            throw new ForbiddenException("the game over");
+        }
 
         if (piece == null) {
             throw new BadRequestException("invalid start position");
