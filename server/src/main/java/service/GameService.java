@@ -201,7 +201,7 @@ public class GameService {
         ChessGame game = gameData.game();
         ChessPiece piece = game.getBoard().getPiece(request.move().getStartPosition());
         if (game.getGameOver()) {
-            throw new ForbiddenException("the game over");
+            throw new ForbiddenException("the game is over");
         }
 
         if (piece == null) {

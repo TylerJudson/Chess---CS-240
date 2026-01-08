@@ -100,6 +100,7 @@ public class GameClient implements Client, ServerMessageObserver {
                     - Move: "m" "move"        | Moves a piece.
                     - Redraw: "r" "redraw"    | Redraws the game board.
                     - Show Moves: "s" "show"  | Shows all legal moves for a piece.
+                    - Resign: "resign"        | Resign from the game.
                     - Exit: "e" "exit"        | Exit the game.
                     - Help: "h" "help"        | List available commands.
                 """);
@@ -115,6 +116,12 @@ public class GameClient implements Client, ServerMessageObserver {
                 if (!isObserving && !game.getGameOver()) {
                     return move(authToken, gameId);
                 }
+                else {
+                    redraw();
+                    PrintUtilities.printError("Error: Unkown Command: '" + str + "'.");
+                    System.out.println("Type \"help\" to see available commands.\n");
+                    break;
+                }
 
             case "r":
             case "redraw":
@@ -123,6 +130,9 @@ public class GameClient implements Client, ServerMessageObserver {
             case "s":
             case "show":
                 return showMoves();
+
+            case "resign":
+                return resign(authToken, gameId);
 
             case "e":
             case "exit":
@@ -187,6 +197,25 @@ public class GameClient implements Client, ServerMessageObserver {
         return null;
     }
 
+    private ClientResult resign(String authToken, int gameId) {
+
+        System.out.print("Are you sure you want to resign? Type (yes) to confirm: ");
+        String confirmation = scanner.nextLine();
+        if (confirmation != null && !confirmation.toLowerCase().equals("yes")) {
+            redraw();
+            return null;
+        }
+
+        try {
+            UserGameCommand gameCommand = new UserGameCommand(CommandType.RESIGN, authToken, gameId);
+            this.webSocketFacade.performCommand(gameCommand);
+        }
+        catch (Exception ex) {
+            PrintUtilities.printError(ex.getMessage() + ".");
+        }
+        return null;
+    }
+
     private ClientResult exit(String authToken, int gameId) {
         try {
             UserGameCommand gameCommand = new UserGameCommand(CommandType.LEAVE, authToken, gameId);
@@ -243,7 +272,11 @@ public class GameClient implements Client, ServerMessageObserver {
                 System.out.println("THE GAME ENDED IN STALEMATE");
             }
             else if (game.isInCheckmate(game.getTeamTurn())) {
-                if (game.getTeamTurn() != clientColor) {
+                TeamColor winningTeam = game.getTeamTurn() == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
+                if (isObserving) {
+                    System.out.println("CHECKMATE: %S WON.".formatted(winningTeam));
+                }
+                else if (winningTeam == clientColor) {
                     PrintUtilities.printSuccess("CONGRATULATIONS! YOU WON!");
                 }
                 else {
@@ -251,8 +284,19 @@ public class GameClient implements Client, ServerMessageObserver {
                 }
             }
             else {
-                System.out.println("PRINT RESIGN");
+                PrintUtilities.printMessage(message == null ? "" : message);
+                System.out.println("Game Over.");
             }
+            System.out.println("\n\nType 'e' or 'exit' to exit the game.");
+        }
+        else if (message != null && message.contains("resigned")) {
+            PrintUtilities.printMessage(message);
+
+            System.out.println();
+
+            System.out.println("Game Over.\n\nType 'e' or 'exit' to exit the game.");
+
+            isObserving = true;
         }
         else {
             PrintUtilities.printMessage(message == null ? "" : message);
