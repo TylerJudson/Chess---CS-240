@@ -14,6 +14,7 @@ import model.AuthData;
 import model.GameData;
 import requests.CreateGameRequest;
 import requests.JoinGameRequest;
+import requests.LeaveGameRequest;
 import requests.MakeMoveRequest;
 import results.CreateGameResult;
 import results.ListGamesResult;
@@ -113,6 +114,34 @@ public class GameService {
         }
     }
 
+    public void leaveGame(LeaveGameRequest request, String authToken) {
+        // validate the request
+        if (request == null) {
+            throw new BadRequestException("bad request");
+        }
+
+        // verify the authtoken
+        AuthData authData = userService.getAuthData(authToken);
+        if (authData == null) {
+            throw new UnauthorizedException("unauthorized");
+        }
+
+        // verify the gameID
+        GameData gameData = gameDAO.getGame(request.gameID());
+        if (gameData == null) {
+            throw new BadRequestException("bad request");
+        }
+
+        // Update the game
+        if (gameData.whiteUsername().equals(authData.username())) {
+            GameData newGameData = new GameData(gameData.gameID(), null, gameData.blackUsername(), gameData.gameName(), gameData.game());
+            gameDAO.updateGame(newGameData);
+        }
+        else if (gameData.blackUsername().equals(authData.username())) {
+            GameData newGameData = new GameData(gameData.gameID(), gameData.whiteUsername(), null, gameData.gameName(), gameData.game());
+            gameDAO.updateGame(newGameData);
+        }
+    }
 
     public MakeMoveResult makeMove(MakeMoveRequest request, String authToken) {
         // validate the request

@@ -23,6 +23,7 @@ import io.javalin.websocket.WsMessageContext;
 import io.javalin.websocket.WsMessageHandler;
 import model.AuthData;
 import model.GameData;
+import requests.LeaveGameRequest;
 import requests.MakeMoveRequest;
 import service.GameService;
 import service.UserService;
@@ -104,6 +105,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         connections.broadcast(gameCommand.getGameID(), session, notification);
     }
     private void leave(UserGameCommand gameCommand, Session session) throws IOException {
+        gameService.leaveGame(new LeaveGameRequest(gameCommand.getGameID()), gameCommand.getAuthToken());
         String message = "%s has left the game.".formatted(getUserName(gameCommand.getAuthToken()));
         ServerMessage serverMessage = new ServerMessage(ServerMessageType.NOTIFICATION, message);
         connections.broadcast(gameCommand.getGameID(), session, serverMessage);
