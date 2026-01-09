@@ -71,7 +71,8 @@ public class GameServiceTests {
         );
 
         for (CreateGameRequest createGameRequest : requests) {
-            BadRequestException ex = assertThrows(BadRequestException.class, () -> gameService.createGame(createGameRequest, registerResult.authToken()));
+            BadRequestException ex = assertThrows(BadRequestException.class, 
+                () -> gameService.createGame(createGameRequest, registerResult.authToken()));
             assertEquals("bad request", ex.getMessage());
         }
     }

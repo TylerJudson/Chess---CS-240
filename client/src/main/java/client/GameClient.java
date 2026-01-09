@@ -178,9 +178,11 @@ public class GameClient implements Client, ServerMessageObserver {
             && piece != null && piece.getPieceType() == PieceType.PAWN
         ) {
             System.out.print("Promotion type (");
-            for (int i = 0; i < ChessPiece.Promotions.length; i++) {
-                if (i > 0) System.out.print(", ");
-                System.out.print(ChessPiece.Promotions[i].toString().toLowerCase());
+            for (int i = 0; i < ChessPiece.PROMOTIONS.length; i++) {
+                if (i > 0) {
+                    System.out.print(", ");
+                }
+                System.out.print(ChessPiece.PROMOTIONS[i].toString().toLowerCase());
             }
             System.out.print("): ");
 

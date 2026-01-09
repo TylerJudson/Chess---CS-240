@@ -70,7 +70,13 @@ public class ChessMove {
 
     @Override
     public String toString() {
-        return "Start: [%d, %d]; End: [%d, %d]; PP: %s".formatted(this.startPosition.getRow(), this.startPosition.getColumn(), this.endPosition.getRow(), this.endPosition.getColumn(), this.promotionPiece);
+        return "Start: [%d, %d]; End: [%d, %d]; PP: %s".formatted(
+                this.startPosition.getRow(), 
+                this.startPosition.getColumn(), 
+                this.endPosition.getRow(), 
+                this.endPosition.getColumn(), 
+                this.promotionPiece
+        );
     }
 
 }

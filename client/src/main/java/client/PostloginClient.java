@@ -32,7 +32,7 @@ public class PostloginClient implements Client {
     }
 
     @Override
-    public ClientResult eval(String str, String authToken, int GameID) {
+    public ClientResult eval(String str, String authToken, int gameID) {
         switch (str) {
             case "c":
             case "create":

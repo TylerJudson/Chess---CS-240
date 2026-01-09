@@ -28,7 +28,7 @@ public class PreloginClient implements Client {
     }
 
     @Override
-    public ClientResult eval(String str, String authToken, int GameID) {
+    public ClientResult eval(String str, String authToken, int gameID) {
         switch (str) {
             case "r":
             case "register":

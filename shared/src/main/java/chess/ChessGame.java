@@ -42,40 +42,22 @@ public class ChessGame {
         this.gameOver = false;
     }
 
-    /**
-     * @return Which team's turn it is
-     */
     public TeamColor getTeamTurn() {
         return this.currentTeam;
     }
 
-    /**
-     * Set's which teams turn it is
-     *
-     * @param team the team whose turn it is
-     */
     public void setTeamTurn(TeamColor team) {
         this.currentTeam = team;
     }
     
-    /**
-     * Changes the team turn from black to white or from white to black
-     */
     public void changeTeamTurn() {
         this.setTeamTurn(this.getTeamTurn() == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE);
     }
 
-    /**
-     * Get the last move made
-     * @return previous move
-     */
     public ChessMove getPreviousMove() {
         return this.previousMove;
     }
 
-    /**
-     * Enum identifying the 2 possible teams in a chess game
-     */
     public enum TeamColor {
         WHITE,
         BLACK
@@ -147,10 +129,20 @@ public class ChessGame {
         if (this.isMoveCastling(move)) {
             this.getBoard().movePiece(move);
             if (move.getEndPosition().getColumn() == 7) {
-                this.getBoard().movePiece(new ChessMove(new ChessPosition(move.getStartPosition().getRow(), 8), new ChessPosition(move.getStartPosition().getRow(), 6), null));
+                this.getBoard().movePiece(
+                    new ChessMove(
+                        new ChessPosition(move.getStartPosition().getRow(), 8), 
+                        new ChessPosition(move.getStartPosition().getRow(), 6), 
+                        null)
+                );
             }
             else {
-                this.getBoard().movePiece(new ChessMove(new ChessPosition(move.getStartPosition().getRow(), 1), new ChessPosition(move.getStartPosition().getRow(), 4), null));
+                this.getBoard().movePiece(
+                    new ChessMove(
+                        new ChessPosition(move.getStartPosition().getRow(), 1), 
+                        new ChessPosition(move.getStartPosition().getRow(), 4), 
+                        null)
+                );
             }
         }
         else if (this.isEnPassantMove(move)) {
@@ -193,8 +185,10 @@ public class ChessGame {
          // Find the position of the king
         ChessPosition kingPosition = this.findKing(board, teamColor);
 
+        TeamColor oppositeTeamColor = teamColor == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
+
         // Loop through all of the oppenents pieces
-        for (ChessPosition opponentPosition : this.findAllPositionsOfPieces(board, teamColor == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE)) {
+        for (ChessPosition opponentPosition : this.findAllPositionsOfPieces(board, oppositeTeamColor)) {
             ChessPiece opponentPiece = board.getPiece(opponentPosition);
             
             // Loop through all of the moves to determine if they match the king's position
@@ -303,28 +297,6 @@ public class ChessGame {
             }
         }
         return null;
-    }
-
-    /**
-     * Finds all of the pieces on the board for a given color
-     * 
-     * @param board the chessboard to check
-     * @param teamColor the particular color
-     * @return a list of all of the pieces
-     */
-    public Collection<ChessPiece> findAllPieces(ChessBoard board, TeamColor teamColor) {
-        Collection<ChessPiece> pieces = new ArrayList<ChessPiece>();
-
-        for (int i = 1; i <= 8; i++) {
-            for (int j = 1; j <= 8; j++) {
-                ChessPiece piece = board.getPiece(new ChessPosition(i, j));
-                if (piece != null && piece.getTeamColor() == teamColor) {
-                    pieces.add(piece);
-                }
-            }
-        }
-
-        return pieces;
     }
 
     /**
@@ -453,13 +425,16 @@ public class ChessGame {
     private boolean canDoEnPassant(ChessPosition pos) {
         // Check if the piece is a pawn and is on the correct row
         ChessPiece pawn = this.getBoard().getPiece(pos);
-        if (pawn == null) return false;
+        if (pawn == null) {
+            return false;
+        }
 
         int row = pawn.getTeamColor() == TeamColor.WHITE ? 5 : 4;
         if (pawn.getPieceType() == PieceType.PAWN && pos.getRow() == row) {
             // Check if the last move was performed by a pawn and that they moved 2 spaces
             ChessPiece opponentPawn = this.getBoard().getPiece(this.previousMove.getEndPosition());
-            if (opponentPawn.getPieceType() == PieceType.PAWN && Math.abs(this.previousMove.getStartPosition().getRow() - this.previousMove.getEndPosition().getRow()) == 2) {
+            if (opponentPawn.getPieceType() == PieceType.PAWN 
+                && Math.abs(this.previousMove.getStartPosition().getRow() - this.previousMove.getEndPosition().getRow()) == 2) {
 
                 // Check if the pawns are right next to eachother
                 if (Math.abs(pos.getColumn() - this.previousMove.getEndPosition().getColumn()) == 1) {
@@ -480,7 +455,11 @@ public class ChessGame {
         if (canDoEnPassant(pos)) {
             ChessPiece pawn = this.getBoard().getPiece(pos);
             int newRow = pawn.getTeamColor() == TeamColor.WHITE ? 6 : 3;
-            return new ChessMove(pos, new ChessPosition(newRow, this.previousMove.getEndPosition().getColumn()), null);
+            return new ChessMove(
+                    pos, 
+                    new ChessPosition(newRow, this.previousMove.getEndPosition().getColumn()), 
+                    null
+            );
         }
      
         return null;
@@ -498,7 +477,6 @@ public class ChessGame {
         return false;
 
     }
-
 
     @Override
     public boolean equals(Object o) {

@@ -134,7 +134,10 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void makeMove(MakeMoveCommand moveCommand, Session session) throws IOException {
-        GameData gameData = gameService.makeMove(new MakeMoveRequest(moveCommand.getGameID(), moveCommand.getMove()), moveCommand.getAuthToken()).gameData();
+        GameData gameData = gameService.makeMove(
+                    new MakeMoveRequest(moveCommand.getGameID(), moveCommand.getMove()), 
+                    moveCommand.getAuthToken()
+                ).gameData();
         String message = getMoveMessage(moveCommand, gameData, getUserName(moveCommand.getAuthToken()));
 
         // Send LOAD_GAME to sender

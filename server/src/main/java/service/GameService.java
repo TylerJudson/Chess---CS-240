@@ -106,11 +106,21 @@ public class GameService {
 
         // Update the game
         if (request.playerColor().equals("WHITE")) {
-            GameData newGameData = new GameData(gameData.gameID(), authData.username(), gameData.blackUsername(), gameData.gameName(), gameData.game());
+            GameData newGameData = new GameData(
+                            gameData.gameID(), 
+                            authData.username(), 
+                            gameData.blackUsername(), 
+                            gameData.gameName(), 
+                            gameData.game());
             this.gameDAO.updateGame(newGameData);
         }
         else {
-            GameData newGameData = new GameData(gameData.gameID(), gameData.whiteUsername(), authData.username(), gameData.gameName(), gameData.game());
+            GameData newGameData = new GameData(
+                            gameData.gameID(), 
+                            gameData.whiteUsername(), 
+                            authData.username(), 
+                            gameData.gameName(), 
+                            gameData.game());
             this.gameDAO.updateGame(newGameData);
         }
     }

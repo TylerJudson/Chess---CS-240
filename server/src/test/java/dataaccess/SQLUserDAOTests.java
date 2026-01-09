@@ -22,20 +22,38 @@ public class SQLUserDAOTests {
         userDAO.clearAllData();
     }
 
+    // Helper method to verify user data matches expected values
+    private void verifyUserMatches(UserData expected, UserData actual) {
+        assertNotNull(actual);
+        assertEquals(expected.username(), actual.username());
+        assertEquals(expected.password(), actual.password());
+        assertEquals(expected.email(), actual.email());
+    }
+
+    // Helper method to verify auth data matches expected values
+    private void verifyAuthMatches(String expectedToken, String expectedUsername, AuthData actual) {
+        assertNotNull(actual);
+        assertEquals(expectedToken, actual.authToken());
+        assertEquals(expectedUsername, actual.username());
+    }
+
+    // Helper method to create user and auth token, returns the AuthData
+    private AuthData setupUserAndAuth(String token) {
+        userDAO.createUser(basicUser);
+        AuthData authData = new AuthData(token, basicUser.username());
+        userDAO.createAuth(authData);
+        return authData;
+    }
+
     // CREATE USER TESTS
     @Test
     public void createUserSuccess() {
         // Create the user
         userDAO.createUser(basicUser);
 
-        // Fetch the user
+        // Fetch the user and verify it matches
         UserData fetched = userDAO.getUser(basicUser.username());
-        
-        // Verify that the user is the same
-        assertNotNull(fetched);
-        assertEquals(basicUser.username(), fetched.username());
-        assertEquals(basicUser.password(), fetched.password());
-        assertEquals(basicUser.email(), fetched.email());
+        verifyUserMatches(basicUser, fetched);
     }
     @Test
     public void createDuplicateUserFails() {
@@ -53,14 +71,9 @@ public class SQLUserDAOTests {
         // Create the user
         userDAO.createUser(basicUser);
 
-        // Fetch the user
+        // Fetch the user and verify it matches
         UserData fetched = userDAO.getUser(basicUser.username());
-        
-        // Verify that the user is the same
-        assertNotNull(fetched);
-        assertEquals(basicUser.username(), fetched.username());
-        assertEquals(basicUser.password(), fetched.password());
-        assertEquals(basicUser.email(), fetched.email());
+        verifyUserMatches(basicUser, fetched);
     }
     @Test
     public void getUserReturnsNullWhenUserDoesNotExist() {
@@ -74,17 +87,11 @@ public class SQLUserDAOTests {
     // CREATE AUTH TESTS
     @Test
     public void createAuthSuccess() {
-        // Create user and auth token
-        userDAO.createUser(basicUser);
-        userDAO.createAuth(new AuthData("token", basicUser.username()));
+        setupUserAndAuth("token");
 
-        // Fetch the authdata
+        // Verify auth was created by fetching it
         AuthData fetched = userDAO.getAuthData("token");
-
-        // Verify that the authdata is correct
-        assertNotNull(fetched);
-        assertEquals(fetched.authToken(), "token");
-        assertEquals(fetched.username(), basicUser.username());
+        verifyAuthMatches("token", basicUser.username(), fetched);
     }
 
     @Test
@@ -100,17 +107,11 @@ public class SQLUserDAOTests {
     // GET AUTH TESTS
     @Test
     public void getAuthSuccess() {
-        // Create user and auth token
-        userDAO.createUser(basicUser);
-        userDAO.createAuth(new AuthData("token", basicUser.username()));
+        setupUserAndAuth("authToken123");
 
-        // Fetch the authdata
-        AuthData fetched = userDAO.getAuthData("token");
-
-        // Verify that the authdata is correct
-        assertNotNull(fetched);
-        assertEquals(fetched.authToken(), "token");
-        assertEquals(fetched.username(), basicUser.username());
+        // Test that getAuthData retrieves the correct token
+        AuthData fetched = userDAO.getAuthData("authToken123");
+        verifyAuthMatches("authToken123", basicUser.username(), fetched);
     }
 
     @Test

@@ -33,11 +33,6 @@ public class PrintUtilities {
         System.out.println(SET_TEXT_COLOR_LIGHT_GREY + message + RESET_TEXT_COLOR);
     }
 
-    static void clearLine(int row) {
-        System.out.print(moveCursorToLocation(0, row));
-        System.out.print(ERASE_LINE + "\n");
-    }
-
     static void clearScreen() {
         System.out.print(ERASE_SCREEN);
     }

@@ -59,11 +59,8 @@ public class SQLUserDAO implements UserDAO {
     private UserData executeUserQuery(String statement, Object... params) {
         try (Connection conn = DatabaseManager.getConnection();
             PreparedStatement ps = conn.prepareStatement(statement)) {
-                for (int i = 0; i < params.length; i++) {
-                    Object param = params[i];
-                    if (param instanceof String p) ps.setString(i + 1, p);
-                    else if (param == null) ps.setNull(i + 1, NULL);
-                }
+                // Prepare the statement
+                prepareStatement(ps, params);
 
                 // Check if this is a SELECT statement
                 if (statement.trim().toUpperCase().startsWith("SELECT")) {
@@ -89,11 +86,8 @@ public class SQLUserDAO implements UserDAO {
     private AuthData executeAuthQuery(String statement, Object... params) {
         try (Connection conn = DatabaseManager.getConnection();
             PreparedStatement ps = conn.prepareStatement(statement)) {
-                for (int i = 0; i < params.length; i++) {
-                    Object param = params[i];
-                    if (param instanceof String p) ps.setString(i + 1, p);
-                    else if (param == null) ps.setNull(i + 1, NULL);
-                }
+                // Prepare the statement
+                prepareStatement(ps, params);
 
                 // Check if this is a SELECT statement
                 if (statement.trim().toUpperCase().startsWith("SELECT")) {
@@ -152,6 +146,18 @@ public class SQLUserDAO implements UserDAO {
         }
         catch (DataAccessException | SQLException ex) {
             throw new ServerErrorException(String.format("Unable to configure database: %s", ex.getMessage()));
+        }
+    }
+
+    private void prepareStatement(PreparedStatement ps, Object... params) throws SQLException {
+        for (int i = 0; i < params.length; i++) {
+            Object param = params[i];
+            if (param instanceof String p) {
+                ps.setString(i + 1, p);
+            }
+            else if (param == null) {
+                ps.setNull(i + 1, NULL);
+            }
         }
     }
 }
